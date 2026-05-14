@@ -202,7 +202,7 @@
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-  import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+  import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, setDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyAGcEHgch3ofFWFDUlYphyaXAxqk06DAQ0",
@@ -534,6 +534,15 @@
     document.getElementById(name).classList.add('active');
     if (name === 'pack-photos' && allPackPhotos.length === 0) loadPackPhotos();
     if (name === 'wolfs-photos' && wolfLivePhotos.length === 0) loadWolfLivePhotos();
+  };
+
+  // ── FEATURE LISTING ──
+  window.featureListing = async function(id, name) {
+    try {
+      const { setDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
+      await setDoc(doc(db, 'settings', 'featured'), { listingId: id, bizName: name, updatedAt: new Date().toISOString() });
+      showToast(`⭐ ${name} IS NOW FEATURED`);
+    } catch(e) { showToast('ERROR'); console.error(e); }
   };
 
   // ── TOAST ──
