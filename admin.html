@@ -535,6 +535,9 @@
     if (name === 'pack-photos' && allPackPhotos.length === 0) loadPackPhotos();
     if (name === 'wolfs-photos' && wolfLivePhotos.length === 0) loadWolfLivePhotos();
   };
+
+  // ── TOAST ──
+  function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.classList.add('show');
