@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin · Wolf's Garage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=Oswald:wght@500;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0A0A0A; --ink:#1A1A1A; --bone:#F5F1E8;
+    --red:#CC0000; --red-dark:#990000; --copper:#C8922A;
+    --gray-warm:#2A2520; --gray-mid:#4A4540; --green:#1a7a1a;
+    --line:rgba(245,241,232,0.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:var(--black);color:var(--bone);font-family:'Work Sans',sans-serif;min-height:100vh;}
+
+  /* LOGIN */
+  .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+  .login-card{background:var(--gray-warm);border:1px solid var(--line);padding:48px 40px;width:100%;max-width:400px;position:relative;}
+  .login-card::before{content:'';position:absolute;top:-3px;left:0;right:0;height:3px;background:var(--red);}
+  .login-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;color:var(--bone);margin-bottom:6px;}
+  .login-sub{font-family:'Special Elite',monospace;font-size:11px;color:var(--copper);letter-spacing:2px;margin-bottom:32px;}
+  .login-input{width:100%;background:var(--black);border:1px solid var(--line);color:var(--bone);padding:16px;font-family:'Work Sans',sans-serif;font-size:16px;margin-bottom:16px;}
+  .login-input:focus{outline:none;border-color:var(--red);}
+  .login-btn{width:100%;background:var(--red);color:var(--bone);border:none;padding:16px;font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:3px;cursor:pointer;transition:background 0.2s;}
+  .login-btn:hover{background:var(--red-dark);}
+  .login-error{color:var(--red);font-size:13px;margin-top:12px;font-family:'Special Elite',monospace;display:none;}
+
+  /* APP */
+  .app-wrap{display:none;}
+  .top-bar{background:var(--black);border-bottom:3px solid var(--red);padding:16px 0;}
+  .top-bar .inner{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;}
+  .brand-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;}
+  .brand-tag{font-family:'Special Elite',monospace;font-size:10px;color:var(--copper);letter-spacing:2px;}
+  .logout-btn{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;background:transparent;border:1px solid rgba(245,241,232,0.3);color:rgba(245,241,232,0.5);padding:8px 14px;cursor:pointer;}
+  .logout-btn:hover{border-color:var(--red);color:var(--red);}
+
+  /* STATS */
+  .stats-bar{background:var(--ink);border-bottom:1px solid var(--line);padding:20px;}
+  .stats-inner{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;gap:24px;flex-wrap:wrap;}
+  .stat-card{background:var(--gray-warm);border:1px solid var(--line);padding:16px 24px;min-width:120px;}
+  .stat-num{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--bone);line-height:1;}
+  .stat-num.pending-color{color:var(--copper);}
+  .stat-num.approved-color{color:#4CAF50;}
+  .stat-lbl{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:rgba(245,241,232,0.5);margin-top:4px;}
+  .backup-btn{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;background:transparent;border:1px solid var(--copper);color:var(--copper);padding:10px 18px;cursor:pointer;margin-left:auto;align-self:center;}
+  .backup-btn:hover{background:var(--copper);color:var(--black);}
+
+  /* TABS */
+  .main{max-width:1200px;margin:0 auto;padding:20px;}
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:24px;}
+  .tab{font-family:'Oswald',sans-serif;font-size:13px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:14px 20px;background:transparent;color:rgba(245,241,232,0.5);border:none;cursor:pointer;position:relative;white-space:nowrap;}
+  .tab:hover{color:var(--bone);}
+  .tab.active{color:var(--bone);}
+  .tab.active::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--red);}
+  .tab-badge{background:var(--copper);color:var(--black);font-size:10px;padding:2px 6px;margin-left:6px;font-weight:700;}
+  .panel{display:none;} .panel.active{display:block;}
+
+  /* CARDS */
+  .admin-card{background:var(--gray-warm);border:1px solid var(--line);padding:24px;margin-bottom:16px;position:relative;}
+  .admin-card.pending{border-left:3px solid var(--copper);}
+  .admin-card.approved{border-left:3px solid #4CAF50;}
+  .admin-card.rejected{border-left:3px solid var(--gray-mid);opacity:0.65;}
+  .card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;}
+  .card-biz{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;}
+  .card-meta{font-family:'Special Elite',monospace;font-size:11px;color:var(--copper);letter-spacing:2px;text-transform:uppercase;margin-top:2px;}
+  .status-pill{font-family:'Oswald',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;padding:4px 10px;text-transform:uppercase;}
+  .status-pill.pending{background:var(--copper);color:var(--black);}
+  .status-pill.approved{background:#4CAF50;color:#fff;}
+  .status-pill.rejected{background:var(--gray-mid);color:var(--bone);}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:12px;}
+  .field-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--copper);text-transform:uppercase;margin-bottom:3px;}
+  .field-val{font-size:14px;color:var(--bone);line-height:1.5;}
+  .card-bio{margin:12px 0;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid var(--line);}
+  .btn{font-family:'Oswald',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:10px 18px;border:none;cursor:pointer;transition:all 0.15s;}
+  .btn-approve{background:#1a7a1a;color:#fff;} .btn-approve:hover{background:#2da02d;}
+  .btn-reject{background:var(--gray-mid);color:var(--bone);} .btn-reject:hover{background:var(--red);}
+  .btn-delete{background:var(--red-dark);color:var(--bone);} .btn-delete:hover{background:var(--red);}
+  .btn-requeue{background:var(--copper);color:var(--black);}
+
+  /* EMPTY */
+  .empty{text-align:center;padding:60px 20px;font-family:'Bebas Neue',sans-serif;font-size:20px;color:rgba(245,241,232,0.3);letter-spacing:2px;}
+
+  /* LOADING */
+  .loading{text-align:center;padding:40px;font-family:'Oswald',sans-serif;letter-spacing:3px;color:var(--copper);}
+  .spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--copper);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--red);color:var(--bone);font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:2px;padding:14px 28px;z-index:999;transition:transform 0.3s;pointer-events:none;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-card">
+    <div class="login-title">WOLF'S GARAGE</div>
+    <div class="login-sub">ADMIN ACCESS ONLY</div>
+    <input class="login-input" type="password" id="pw-input" placeholder="Password" autocomplete="current-password">
+    <button class="login-btn" onclick="doLogin()">ENTER THE GARAGE</button>
+    <div class="login-error" id="login-error">WRONG PASSWORD. TRY AGAIN.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app-wrap" id="app-wrap">
+  <div class="top-bar">
+    <div class="inner">
+      <div>
+        <div class="brand-name">WOLF'S GARAGE</div>
+        <div class="brand-tag">ADMIN PANEL</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">LOG OUT</button>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-card">
+        <div class="stat-num pending-color" id="stat-pending">–</div>
+        <div class="stat-lbl">Pending Review</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num approved-color" id="stat-approved">–</div>
+        <div class="stat-lbl">Live on Site</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-total">–</div>
+        <div class="stat-lbl">Total Submissions</div>
+      </div>
+      <button class="backup-btn" onclick="downloadBackup()">⬇ DOWNLOAD BACKUP</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="tabs">
+      <button class="tab active" data-tab="listings" onclick="switchPanel('listings')">
+        Listings <span class="tab-badge" id="badge-pending">0</span>
+      </button>
+    </div>
+
+    <div class="panel active" id="listings">
+      <div class="loading" id="listings-loading"><span class="spinner"></span>LOADING...</div>
+      <div id="listings-content"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+  import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAGcEHgch3ofFWFDUlYphyaXAxqk06DAQ0",
+    authDomain: "wolfs-garage-directory.firebaseapp.com",
+    projectId: "wolfs-garage-directory",
+    storageBucket: "wolfs-garage-directory.firebasestorage.app",
+    messagingSenderId: "868695357399",
+    appId: "1:868695357399:web:022c9974691fd183d77d92"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const PASS = 'Papawolf1169!';
+  let allListings = [];
+
+  // ── AUTH ──
+  window.doLogin = function() {
+    const val = document.getElementById('pw-input').value;
+    if (val === PASS) {
+      document.getElementById('login-wrap').style.display = 'none';
+      document.getElementById('app-wrap').style.display = 'block';
+      loadListings();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('pw-input').value = '';
+    }
+  };
+
+  window.doLogout = function() {
+    document.getElementById('login-wrap').style.display = 'flex';
+    document.getElementById('app-wrap').style.display = 'none';
+    document.getElementById('pw-input').value = '';
+  };
+
+  document.getElementById('pw-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.doLogin();
+  });
+
+  // ── PANEL SWITCH ──
+  window.switchPanel = function(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelector(`.tab[data-tab="${name}"]`).classList.add('active');
+    document.getElementById(name).classList.add('active');
+  };
+
+  // ── LOAD LISTINGS ──
+  async function loadListings() {
+    document.getElementById('listings-loading').style.display = 'block';
+    document.getElementById('listings-content').innerHTML = '';
+    try {
+      const snap = await getDocs(collection(db, 'listings'));
+      allListings = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+      renderListings();
+    } catch(e) {
+      document.getElementById('listings-loading').style.display = 'none';
+      document.getElementById('listings-content').innerHTML = `<div class="empty">ERROR LOADING — CHECK FIRESTORE RULES</div>`;
+      console.error(e);
+    }
+  }
+
+  function renderListings() {
+    document.getElementById('listings-loading').style.display = 'none';
+    const order = { pending:0, approved:1, rejected:2 };
+    const sorted = [...allListings].sort((a,b) => {
+      if (order[a.status] !== order[b.status]) return order[a.status] - order[b.status];
+      return new Date(b.submittedAt) - new Date(a.submittedAt);
+    });
+
+    const pending = allListings.filter(l => l.status === 'pending').length;
+    const approved = allListings.filter(l => l.status === 'approved').length;
+    document.getElementById('stat-pending').textContent = pending;
+    document.getElementById('stat-approved').textContent = approved;
+    document.getElementById('stat-total').textContent = allListings.length;
+    document.getElementById('badge-pending').textContent = pending;
+
+    if (sorted.length === 0) {
+      document.getElementById('listings-content').innerHTML = `<div class="empty">NO SUBMISSIONS YET.<br>SHARE THE FORM AT YOUR NEXT EVENT.</div>`;
+      return;
+    }
+
+    document.getElementById('listings-content').innerHTML = sorted.map(l => `
+      <div class="admin-card ${l.status}" id="card-${l._id}">
+        <div class="card-header">
+          <div>
+            <div class="card-biz">${esc(l.bizName)}</div>
+            <div class="card-meta">${esc(l.bizType)} · ${esc(l.location)}</div>
+          </div>
+          <span class="status-pill ${l.status}">${l.status}</span>
+        </div>
+        <div class="card-grid">
+          <div><div class="field-label">Owner</div><div class="field-val">${esc(l.ownerName)}</div></div>
+          <div><div class="field-label">Contact</div><div class="field-val">${esc(l.contact)}${l.website ? '<br>'+esc(l.website) : ''}</div></div>
+          ${l.address ? `<div><div class="field-label">Address</div><div class="field-val">${esc(l.address)}</div></div>` : ''}
+          <div><div class="field-label">Submitted</div><div class="field-val">${new Date(l.submittedAt).toLocaleDateString()}</div></div>
+        </div>
+        <div class="card-bio">
+          <div class="field-label">Bio</div>
+          <div class="field-val">${esc(l.bio)}</div>
+        </div>
+        ${l.currentRides ? `<div style="margin-bottom:8px"><div class="field-label">Current Rides</div><div class="field-val">${esc(l.currentRides)}</div></div>` : ''}
+        ${l.pastRides ? `<div style="margin-bottom:8px"><div class="field-label">Past Rides</div><div class="field-val">${esc(l.pastRides)}</div></div>` : ''}
+        ${l.bizPhotos ? `<div style="margin-bottom:8px"><div class="field-label">Business Photos</div><div class="field-val">${esc(l.bizPhotos)}</div></div>` : ''}
+        ${l.vehiclePhotos ? `<div style="margin-bottom:8px"><div class="field-label">Vehicle Photos</div><div class="field-val">${esc(l.vehiclePhotos)}</div></div>` : ''}
+        <div class="btn-row">
+          ${l.status !== 'approved' ? `<button class="btn btn-approve" onclick="setStatus('${l._id}','approved')">✓ Approve</button>` : ''}
+          ${l.status !== 'rejected' ? `<button class="btn btn-reject" onclick="setStatus('${l._id}','rejected')">✗ Reject</button>` : ''}
+          ${l.status !== 'pending' ? `<button class="btn btn-requeue" onclick="setStatus('${l._id}','pending')">↺ Re-queue</button>` : ''}
+          <button class="btn btn-delete" onclick="deleteListing('${l._id}')">🗑 Delete</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── ACTIONS ──
+  window.setStatus = async function(id, status) {
+    try {
+      await updateDoc(doc(db, 'listings', id), { status });
+      const idx = allListings.findIndex(l => l._id === id);
+      if (idx > -1) allListings[idx].status = status;
+      renderListings();
+      showToast(status === 'approved' ? 'NOW LIVE ON THE DIRECTORY' : status === 'rejected' ? 'SUBMISSION REJECTED' : 'RE-QUEUED FOR REVIEW');
+    } catch(e) { showToast('ERROR — TRY AGAIN'); console.error(e); }
+  };
+
+  window.deleteListing = async function(id) {
+    if (!confirm('Delete permanently? This cannot be undone.')) return;
+    try {
+      await deleteDoc(doc(db, 'listings', id));
+      allListings = allListings.filter(l => l._id !== id);
+      renderListings();
+      showToast('DELETED');
+    } catch(e) { showToast('ERROR — TRY AGAIN'); console.error(e); }
+  };
+
+  // ── BACKUP ──
+  window.downloadBackup = function() {
+    const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    const backup = { exportedAt: new Date().toISOString(), listings: allListings };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `wolfs-garage-directory-backup-${ts}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('BACKUP DOWNLOADED');
+  };
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── UTIL ──
+  function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+</script>
+</body>
+</html>

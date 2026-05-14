@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hot Rodder Directory · Wolf's Garage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=Oswald:wght@500;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0A0A0A; --ink: #1A1A1A; --bone: #F5F1E8;
+    --red: #CC0000; --red-dark: #990000; --copper: #C8922A;
+    --gray-warm: #2A2520; --gray-mid: #4A4540;
+    --line: rgba(245,241,232,0.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { background:var(--black); color:var(--bone); font-family:'Work Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      repeating-linear-gradient(90deg,transparent 0,transparent 49px,rgba(245,241,232,0.015) 49px,rgba(245,241,232,0.015) 50px),
+      radial-gradient(circle at 20% 30%,rgba(204,0,0,0.05) 0%,transparent 40%),
+      radial-gradient(circle at 80% 70%,rgba(200,146,42,0.04) 0%,transparent 40%);
+  }
+  .container { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:0 20px; }
+  .top-bar { background:var(--black); border-bottom:3px solid var(--red); padding:20px 0; position:relative; }
+  .top-bar::after { content:''; position:absolute; left:0; right:0; bottom:-7px; height:1px; background:var(--copper); }
+  .brand { display:flex; align-items:center; gap:16px; }
+  .brand-mark { width:50px; height:50px; background:var(--red); border:2px solid var(--bone); display:flex; align-items:center; justify-content:center; font-family:'Bebas Neue',sans-serif; font-size:28px; color:var(--bone); }
+  .brand-name { font-family:'Bebas Neue',sans-serif; font-size:24px; color:var(--bone); letter-spacing:4px; }
+  .brand-tag { font-family:'Special Elite',monospace; font-size:11px; color:var(--copper); letter-spacing:1px; margin-top:2px; }
+  .hero { padding:60px 0 40px; border-bottom:1px solid var(--line); }
+  .hero-eyebrow { font-family:'Special Elite',monospace; font-size:12px; color:var(--red); letter-spacing:4px; text-transform:uppercase; margin-bottom:16px; }
+  .hero h1 { font-family:'Bebas Neue',sans-serif; font-size:clamp(48px,8vw,96px); line-height:0.9; color:var(--bone); letter-spacing:-1px; margin-bottom:20px; }
+  .hero h1 .accent { color:var(--red); font-style:italic; }
+  .hero-sub { font-size:17px; line-height:1.6; color:rgba(245,241,232,0.75); max-width:620px; margin-bottom:32px; }
+  .hero-actions { display:flex; gap:14px; flex-wrap:wrap; }
+  .btn { font-family:'Oswald',sans-serif; font-weight:700; font-size:14px; letter-spacing:2px; text-transform:uppercase; padding:14px 28px; border:none; cursor:pointer; transition:all 0.2s; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+  .btn-primary { background:var(--red); color:var(--bone); border:2px solid var(--red); }
+  .btn-primary:hover { background:var(--red-dark); border-color:var(--red-dark); transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--copper); }
+  .btn-ghost { background:transparent; color:var(--bone); border:2px solid var(--bone); }
+  .btn-ghost:hover { background:var(--bone); color:var(--black); }
+  .tabs { display:flex; border-bottom:1px solid var(--line); margin-bottom:40px; overflow-x:auto; scrollbar-width:none; }
+  .tabs::-webkit-scrollbar { display:none; }
+  .tab { font-family:'Oswald',sans-serif; font-size:13px; font-weight:500; letter-spacing:2px; text-transform:uppercase; padding:18px 24px; background:transparent; color:rgba(245,241,232,0.5); border:none; cursor:pointer; position:relative; white-space:nowrap; transition:color 0.2s; }
+  .tab:hover { color:var(--bone); }
+  .tab.active { color:var(--bone); }
+  .tab.active::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:3px; background:var(--red); }
+  .section { display:none; padding:20px 0 80px; }
+  .section.active { display:block; }
+  .section-head { margin-bottom:32px; }
+  .section-head h2 { font-family:'Bebas Neue',sans-serif; font-size:36px; color:var(--bone); letter-spacing:2px; margin-bottom:8px; }
+  .section-head p { color:rgba(245,241,232,0.6); font-size:15px; }
+  .form-card { background:var(--gray-warm); border:1px solid var(--line); padding:40px; position:relative; }
+  .form-card::before { content:''; position:absolute; top:-2px; left:30px; width:80px; height:4px; background:var(--red); }
+  .form-row { margin-bottom:24px; }
+  .form-row.split { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media(max-width:600px) { .form-row.split { grid-template-columns:1fr; } .form-card { padding:24px; } }
+  .form-label { display:block; font-family:'Oswald',sans-serif; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--copper); margin-bottom:8px; }
+  .form-label .req { color:var(--red); }
+  .form-hint { font-size:12px; color:rgba(245,241,232,0.5); margin-top:6px; font-style:italic; }
+  .form-input,.form-textarea,.form-select { width:100%; background:var(--black); border:1px solid var(--line); color:var(--bone); padding:14px 16px; font-family:'Work Sans',sans-serif; font-size:15px; transition:border 0.2s; }
+  .form-input:focus,.form-textarea:focus,.form-select:focus { outline:none; border-color:var(--red); }
+  .form-textarea { min-height:90px; resize:vertical; line-height:1.5; }
+  .form-actions { display:flex; gap:12px; margin-top:32px; padding-top:24px; border-top:1px solid var(--line); }
+  .listing-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; }
+  .listing-card { background:var(--gray-warm); border:1px solid var(--line); padding:24px; position:relative; transition:all 0.2s; }
+  .listing-card:hover { border-color:var(--red); transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--copper); }
+  .biz-name { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; color:var(--bone); margin-bottom:4px; }
+  .biz-type { font-family:'Special Elite',monospace; font-size:11px; color:var(--copper); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px; }
+  .biz-loc { color:rgba(245,241,232,0.6); font-size:13px; margin-bottom:16px; }
+  .biz-bio { font-size:14px; line-height:1.6; color:rgba(245,241,232,0.8); margin-bottom:12px; }
+  .biz-rides { font-family:'Special Elite',monospace; font-size:12px; color:var(--copper); letter-spacing:1px; }
+  .empty { text-align:center; padding:80px 20px; }
+  .empty .icon { font-size:48px; margin-bottom:20px; opacity:0.3; }
+  .empty div { font-family:'Bebas Neue',sans-serif; font-size:20px; color:rgba(245,241,232,0.4); letter-spacing:2px; }
+  .loading { text-align:center; padding:60px; font-family:'Oswald',sans-serif; letter-spacing:3px; color:var(--copper); }
+  .footer { background:var(--ink); border-top:1px solid var(--line); padding:30px 0; margin-top:60px; }
+  .footer .container { font-family:'Special Elite',monospace; font-size:11px; color:rgba(245,241,232,0.4); letter-spacing:2px; text-align:center; }
+  /* pinstripe divider */
+  .pinstripe { width:100%; height:6px; background:linear-gradient(90deg,transparent 0,var(--red) 5%,var(--red) 50%,var(--copper) 50%,var(--copper) 55%,transparent 100%); margin:40px 0; opacity:0.6; }
+  .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--red); color:var(--bone); font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:2px; padding:14px 28px; z-index:999; transition:transform 0.3s; pointer-events:none; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+  .spinner { display:inline-block; width:20px; height:20px; border:2px solid var(--copper); border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="container">
+    <div class="brand">
+      <div class="brand-mark">W</div>
+      <div>
+        <div class="brand-name">WOLF'S GARAGE</div>
+        <div class="brand-tag">HOT RODDER DIRECTORY</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">Portland · Oregon · Est. whenever you got your first wrench</div>
+    <h1>THE <span class="accent">HOT RODDER</span><br>DIRECTORY</h1>
+    <p class="hero-sub">Shop owners, fabricators, painters, photographers — real people doing real work. Money stays in the community. Get listed. Get found.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="switchTab('signup')">Add My Business</button>
+      <button class="btn btn-ghost" onclick="switchTab('directory')">Browse the Directory</button>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="margin-top:0;">
+  <div class="pinstripe"></div>
+  <div class="tabs">
+    <button class="tab active" data-tab="directory" onclick="switchTab('directory')">Directory</button>
+    <button class="tab" data-tab="signup" onclick="switchTab('signup')">Add My Business</button>
+  </div>
+
+  <!-- DIRECTORY TAB -->
+  <section class="section active" id="directory">
+    <div class="section-head">
+      <h2>THE PACK</h2>
+      <p>Real shops. Real people. Real community.</p>
+    </div>
+    <div class="listing-grid" id="approved-listings">
+      <div class="loading"><span class="spinner"></span>LOADING THE PACK...</div>
+    </div>
+  </section>
+
+  <!-- SIGNUP TAB -->
+  <section class="section" id="signup">
+    <div class="section-head">
+      <h2>GET LISTED</h2>
+      <p>Submit your info. Wolf reviews every listing before it goes live. Usually within 48 hours.</p>
+    </div>
+    <div class="form-card">
+      <form id="signup-form">
+        <div class="form-row split">
+          <div>
+            <label class="form-label">Business Name <span class="req">*</span></label>
+            <input class="form-input" name="bizName" required placeholder="What do you call the shop?">
+          </div>
+          <div>
+            <label class="form-label">What You Do <span class="req">*</span></label>
+            <input class="form-input" name="bizType" required placeholder="Auto shop, painter, welder, fabricator...">
+          </div>
+        </div>
+        <div class="form-row split">
+          <div>
+            <label class="form-label">City / State <span class="req">*</span></label>
+            <input class="form-input" name="location" required placeholder="Portland, OR">
+          </div>
+          <div>
+            <label class="form-label">Full Address <span class="req">*</span></label>
+            <input class="form-input" name="address" placeholder="123 Main St (optional — used for map pin)">
+          </div>
+        </div>
+        <div class="form-row split">
+          <div>
+            <label class="form-label">Your Name <span class="req">*</span></label>
+            <input class="form-input" name="ownerName" required placeholder="First name is fine">
+          </div>
+          <div>
+            <label class="form-label">Contact / Email <span class="req">*</span></label>
+            <input class="form-input" name="contact" required placeholder="How do customers reach you?">
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Website or Social</label>
+          <input class="form-input" name="website" placeholder="https://... or @yourhandle">
+        </div>
+        <div class="form-row">
+          <label class="form-label">About You / Your Shop <span class="req">*</span></label>
+          <textarea class="form-textarea" name="bio" required style="min-height:120px;" placeholder="Write like you'd talk in the shop. Personality over polish. What do you do? Why do you do it? What's your specialty?"></textarea>
+          <div class="form-hint">No corporate speak. Tell the community who you are.</div>
+        </div>
+        <div class="form-row split">
+          <div>
+            <label class="form-label">Current Rides</label>
+            <textarea class="form-textarea" name="currentRides" placeholder="What are you driving or building right now?"></textarea>
+          </div>
+          <div>
+            <label class="form-label">Past Rides</label>
+            <textarea class="form-textarea" name="pastRides" placeholder="The one that got away. Or the first one. Whatever made you who you are."></textarea>
+          </div>
+        </div>
+        <div class="form-row split">
+          <div>
+            <label class="form-label">Business Photos</label>
+            <textarea class="form-textarea" name="bizPhotos" placeholder="Links to photos of your shop or work, or describe what you'd like featured."></textarea>
+          </div>
+          <div>
+            <label class="form-label">Vehicle Photos</label>
+            <textarea class="form-textarea" name="vehiclePhotos" placeholder="Links to your rides, or describe."></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" id="submit-btn">Submit for Review</button>
+          <button type="reset" class="btn btn-ghost">Clear Form</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<div class="footer">
+  <div class="container">WOLF'S GARAGE LLC · PORTLAND, OREGON · GET BACK IN THE GARAGE</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+  import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAGcEHgch3ofFWFDUlYphyaXAxqk06DAQ0",
+    authDomain: "wolfs-garage-directory.firebaseapp.com",
+    projectId: "wolfs-garage-directory",
+    storageBucket: "wolfs-garage-directory.firebasestorage.app",
+    messagingSenderId: "868695357399",
+    appId: "1:868695357399:web:022c9974691fd183d77d92"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ── TABS ──
+  window.switchTab = function(tabName) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('active');
+    document.getElementById(tabName).classList.add('active');
+    if (tabName === 'directory') renderApproved();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── RENDER APPROVED ──
+  async function renderApproved() {
+    const grid = document.getElementById('approved-listings');
+    grid.innerHTML = '<div class="loading"><span class="spinner"></span>LOADING THE PACK...</div>';
+    try {
+      const q = query(collection(db, 'listings'), where('status', '==', 'approved'));
+      const snap = await getDocs(q);
+      const listings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (listings.length === 0) {
+        grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="icon">⚙</div><div>NO LISTINGS YET. BE THE FIRST.</div></div>`;
+        return;
+      }
+      grid.innerHTML = listings.map(l => `
+        <div class="listing-card">
+          <div class="biz-name">${esc(l.bizName)}</div>
+          <div class="biz-type">${esc(l.bizType)}</div>
+          <div class="biz-loc">${esc(l.location)}${l.website ? ' · <a href="'+esc(l.website)+'" target="_blank" style="color:var(--copper);text-decoration:underline;">website</a>' : ''}</div>
+          <div class="biz-bio">${esc(l.bio)}</div>
+          ${l.currentRides ? `<div class="biz-rides">RIDES: ${esc(l.currentRides)}</div>` : ''}
+        </div>
+      `).join('');
+    } catch(e) {
+      grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="icon">⚠</div><div>COULDN'T LOAD LISTINGS.<br>CHECK YOUR CONNECTION.</div></div>`;
+      console.error(e);
+    }
+  }
+
+  // ── SUBMIT ──
+  document.getElementById('signup-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target;
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>SENDING...';
+    const data = {
+      bizName: f.bizName.value.trim(),
+      bizType: f.bizType.value.trim(),
+      location: f.location.value.trim(),
+      address: f.address.value.trim(),
+      ownerName: f.ownerName.value.trim(),
+      contact: f.contact.value.trim(),
+      website: f.website.value.trim(),
+      bio: f.bio.value.trim(),
+      currentRides: f.currentRides.value.trim(),
+      pastRides: f.pastRides.value.trim(),
+      bizPhotos: f.bizPhotos.value.trim(),
+      vehiclePhotos: f.vehiclePhotos.value.trim(),
+      status: 'pending',
+      submittedAt: new Date().toISOString()
+    };
+    try {
+      await addDoc(collection(db, 'listings'), data);
+      f.reset();
+      showToast('SUBMITTED — WOLF WILL REVIEW SHORTLY');
+      btn.disabled = false;
+      btn.textContent = 'Submit for Review';
+    } catch(err) {
+      showToast('ERROR — TRY AGAIN');
+      btn.disabled = false;
+      btn.textContent = 'Submit for Review';
+      console.error(err);
+    }
+  });
+
+  // ── UTIL ──
+  function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ── INIT ──
+  renderApproved();
+</script>
+</body>
+</html>
