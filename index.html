@@ -53,10 +53,20 @@
   .form-textarea{min-height:90px;resize:vertical;line-height:1.5;}
   .form-actions{display:flex;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid var(--line);}
   .btn-submit{font-family:'Oswald',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;padding:14px 28px;background:var(--red);color:var(--bone);border:2px solid var(--red);cursor:pointer;transition:all 0.2s;}
-  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
-  @media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  @media(max-width:500px){.two-col{grid-template-columns:1fr;}}
   .col{min-width:0;}
   .block-label{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:var(--copper);border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:24px;}
+
+  /* PHOTO UPLOAD */
+  .photo-upload-zone{border:2px dashed rgba(245,241,232,0.2);padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;background:var(--black);}
+  .photo-upload-zone:hover,.photo-upload-zone.drag{border-color:var(--red);background:rgba(204,0,0,0.05);}
+  .photo-upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .photo-upload-zone .upload-label{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;color:rgba(245,241,232,0.5);text-transform:uppercase;}
+  .photo-upload-zone .upload-icon{font-size:28px;margin-bottom:6px;opacity:0.4;}
+  .photo-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .photo-thumb{width:64px;height:64px;object-fit:cover;border:1px solid var(--line);}
+
   .btn-submit:hover{background:var(--red-dark);}
   .btn-submit:disabled{opacity:0.5;cursor:not-allowed;}
   .btn-clear{font-family:'Oswald',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;padding:14px 28px;background:transparent;color:var(--bone);border:2px solid var(--bone);cursor:pointer;}
@@ -142,8 +152,13 @@
               <textarea class="form-textarea" name="specialties" placeholder="What do you do better than anyone? What do people call you for?"></textarea>
             </div>
             <div class="form-row">
-              <label class="form-label">Business Photos (links or notes)</label>
-              <textarea class="form-textarea" name="bizPhotos" placeholder="Drop links to photos of your shop or work, or describe what you'd like featured."></textarea>
+              <label class="form-label">Business Photos</label>
+              <div class="photo-upload-zone" id="biz-zone">
+                <input type="file" id="biz-photos" accept="image/*" multiple>
+                <div class="upload-icon">📷</div>
+                <div class="upload-label">Tap to open gallery</div>
+              </div>
+              <div class="photo-thumbs" id="biz-thumbs"></div>
             </div>
           </div>
 
@@ -156,7 +171,7 @@
             </div>
             <div class="form-row">
               <label class="form-label">About You <span class="req">*</span></label>
-              <textarea class="form-textarea" name="bio" required style="min-height:120px;" placeholder="What's your story? Why do you build / wrench / collect? Have fun with this — boring bios don't get read."></textarea>
+              <textarea class="form-textarea" name="bio" required style="min-height:110px;" placeholder="What's your story? Why do you build / wrench / collect? Have fun with this — boring bios don't get read."></textarea>
               <div class="form-hint">Write like you'd talk in the shop. Personality over polish.</div>
             </div>
             <div class="form-row">
@@ -168,16 +183,17 @@
               <textarea class="form-textarea" name="communityOffer" placeholder="Free advice, open garage nights, mentoring, whatever you put out there for free."></textarea>
             </div>
             <div class="form-row">
-              <label class="form-label">What you currently drive / wrench on</label>
-              <textarea class="form-textarea" name="currentRides" placeholder="'67 C10, '49 GMC, '32 Ford coupe project..."></textarea>
+              <label class="form-label">Rides — Past, Present, Future</label>
+              <textarea class="form-textarea" name="rides" style="min-height:90px;" placeholder="The '49 GMC you're wrenching on now, the one that got away, the dream build. All of it."></textarea>
             </div>
             <div class="form-row">
-              <label class="form-label">Vehicles you've owned in the past</label>
-              <textarea class="form-textarea" name="pastRides" placeholder="The ones that got away. The first car. The one that taught you how to weld."></textarea>
-            </div>
-            <div class="form-row">
-              <label class="form-label">Vehicle Photos (links or notes)</label>
-              <textarea class="form-textarea" name="vehiclePhotos" placeholder="Drop links to photos of your rides, or describe."></textarea>
+              <label class="form-label">Vehicle Photos</label>
+              <div class="photo-upload-zone" id="veh-zone">
+                <input type="file" id="veh-photos" accept="image/*" multiple>
+                <div class="upload-icon">🚗</div>
+                <div class="upload-label">Tap to open gallery</div>
+              </div>
+              <div class="photo-thumbs" id="veh-thumbs"></div>
             </div>
           </div>
 
@@ -219,6 +235,54 @@
     setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };
 
+  // ── PHOTO PREVIEWS ──
+  function setupPhotoInput(inputId, thumbsId) {
+    const input = document.getElementById(inputId);
+    const thumbs = document.getElementById(thumbsId);
+    input.addEventListener('change', () => {
+      thumbs.innerHTML = '';
+      Array.from(input.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'photo-thumb';
+          thumbs.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  }
+  setupPhotoInput('biz-photos', 'biz-thumbs');
+  setupPhotoInput('veh-photos', 'veh-thumbs');
+
+  // ── COMPRESS ──
+  function compressImage(file, maxPx=1200, quality=0.75) {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w=img.width, h=img.height;
+          if(w>maxPx||h>maxPx){if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}else{w=Math.round(w*maxPx/h);h=maxPx;}}
+          canvas.width=w; canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          resolve(canvas.toDataURL('image/jpeg',quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function getPhotos(inputId) {
+    const files = Array.from(document.getElementById(inputId).files);
+    const results = [];
+    for (const f of files) results.push(await compressImage(f));
+    return results;
+  }
+
   async function renderApproved() {
     const grid = document.getElementById('approved-listings');
     grid.innerHTML = '<div class="loading"><span class="spinner"></span>LOADING THE PACK...</div>';
@@ -251,19 +315,22 @@
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>SENDING...';
     try {
+      const bizPhotos = await getPhotos('biz-photos');
+      const vehPhotos = await getPhotos('veh-photos');
       await addDoc(collection(db, 'listings'), {
         bizName: f.bizName.value.trim(), bizType: f.bizType.value.trim(),
         location: f.location.value.trim(), address: f.address.value.trim(),
         contact: f.contact.value.trim(), website: f.website.value.trim(),
-        specialties: f.specialties.value.trim(), bizPhotos: f.bizPhotos.value.trim(),
-        ownerName: f.ownerName.value.trim(), ownerContact: f.ownerContact.value.trim(),
-        bio: f.bio.value.trim(), sideWork: f.sideWork.value.trim(),
-        communityOffer: f.communityOffer.value.trim(),
-        currentRides: f.currentRides.value.trim(), pastRides: f.pastRides.value.trim(),
-        vehiclePhotos: f.vehiclePhotos.value.trim(),
+        specialties: f.specialties.value.trim(),
+        ownerName: f.ownerName.value.trim(), bio: f.bio.value.trim(),
+        sideWork: f.sideWork.value.trim(), communityOffer: f.communityOffer.value.trim(),
+        rides: f.rides.value.trim(),
+        bizPhotos, vehPhotos,
         status: 'pending', submittedAt: new Date().toISOString()
       });
       f.reset();
+      document.getElementById('biz-thumbs').innerHTML = '';
+      document.getElementById('veh-thumbs').innerHTML = '';
       document.getElementById('form-wrap').classList.remove('open');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       showToast('SUBMITTED — WOLF WILL REVIEW SHORTLY');
