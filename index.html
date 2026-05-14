@@ -53,6 +53,7 @@
   .form-textarea{min-height:90px;resize:vertical;line-height:1.5;}
   .form-actions{display:flex;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid var(--line);}
   .btn-submit{font-family:'Oswald',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;padding:14px 28px;background:var(--red);color:var(--bone);border:2px solid var(--red);cursor:pointer;transition:all 0.2s;}
+  .block-label{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:var(--copper);border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:24px;}
   .btn-submit:hover{background:var(--red-dark);}
   .btn-submit:disabled{opacity:0.5;cursor:not-allowed;}
   .btn-clear{font-family:'Oswald',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;padding:14px 28px;background:transparent;color:var(--bone);border:2px solid var(--bone);cursor:pointer;}
@@ -99,15 +100,19 @@
 
   <div class="form-wrap" id="form-wrap">
     <div class="form-head">
-      <h2>ADD YOUR BUSINESS</h2>
-      <p>Free to list. Wolf reviews before it goes live. Make it fun — people are gonna read this.</p>
+      <h2>GET LISTED</h2>
+      <p>Free to list. Wolf reviews before it goes live. Make it good — people are gonna read this.</p>
     </div>
     <div class="form-card">
       <form id="signup-form">
+
+        <!-- BUSINESS BLOCK -->
+        <div class="block-label">THE BUSINESS</div>
+
         <div class="form-row split">
           <div>
             <label class="form-label">Business Name <span class="req">*</span></label>
-            <input class="form-input" name="bizName" required placeholder="What do you call the shop?">
+            <input class="form-input" name="bizName" required placeholder="What do you call it?">
           </div>
           <div>
             <label class="form-label">Business Type <span class="req">*</span></label>
@@ -120,28 +125,54 @@
             <input class="form-input" name="location" required placeholder="Portland, OR">
           </div>
           <div>
-            <label class="form-label">Address (optional, for map pin)</label>
+            <label class="form-label">Address (for map pin)</label>
             <input class="form-input" name="address" placeholder="full street address">
           </div>
         </div>
         <div class="form-row split">
           <div>
-            <label class="form-label">Owner Name <span class="req">*</span></label>
-            <input class="form-input" name="ownerName" required placeholder="First name is fine">
-          </div>
-          <div>
             <label class="form-label">Contact / Email <span class="req">*</span></label>
             <input class="form-input" name="contact" required placeholder="How do customers reach you?">
           </div>
+          <div>
+            <label class="form-label">Website or Social</label>
+            <input class="form-input" name="website" placeholder="https://... or @yourhandle">
+          </div>
         </div>
         <div class="form-row">
-          <label class="form-label">Website or Social</label>
-          <input class="form-input" name="website" placeholder="https://... or @yourhandle">
+          <label class="form-label">Specialties</label>
+          <textarea class="form-textarea" name="specialties" placeholder="What do you do better than anyone? What do people call you for?"></textarea>
         </div>
         <div class="form-row">
-          <label class="form-label">Tell us about you <span class="req">*</span></label>
+          <label class="form-label">Business Photos (links or notes)</label>
+          <textarea class="form-textarea" name="bizPhotos" placeholder="Drop links to photos of your shop or work, or describe what you'd like featured."></textarea>
+        </div>
+
+        <!-- OWNER BLOCK -->
+        <div class="block-label" style="margin-top:32px;">THE OWNER</div>
+
+        <div class="form-row split">
+          <div>
+            <label class="form-label">Name or Nickname <span class="req">*</span></label>
+            <input class="form-input" name="ownerName" required placeholder="What do people call you?">
+          </div>
+          <div>
+            <label class="form-label">Contact / Email</label>
+            <input class="form-input" name="ownerContact" placeholder="If different from business contact">
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">About You <span class="req">*</span></label>
           <textarea class="form-textarea" name="bio" required style="min-height:120px;" placeholder="What's your story? Why do you build / wrench / collect? Have fun with this — boring bios don't get read."></textarea>
           <div class="form-hint">Write like you'd talk in the shop. Personality over polish.</div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Side Work Available</label>
+          <textarea class="form-textarea" name="sideWork" placeholder="Work you'll do for pay outside your main business. Mobile installs, weekend fab, hauls, custom work, whatever you've got."></textarea>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Anything you offer the community?</label>
+          <textarea class="form-textarea" name="communityOffer" placeholder="Free advice, open garage nights, mentoring, whatever you put out there for free."></textarea>
         </div>
         <div class="form-row">
           <label class="form-label">What you currently drive / wrench on</label>
@@ -151,16 +182,11 @@
           <label class="form-label">Vehicles you've owned in the past</label>
           <textarea class="form-textarea" name="pastRides" placeholder="The ones that got away. The first car. The one that taught you how to weld."></textarea>
         </div>
-        <div class="form-row split">
-          <div>
-            <label class="form-label">Business Photos (links/notes)</label>
-            <textarea class="form-textarea" name="bizPhotos" placeholder="Drop links to photos of your shop / work, or describe what you'd like featured."></textarea>
-          </div>
-          <div>
-            <label class="form-label">Vehicle Photos (links/notes)</label>
-            <textarea class="form-textarea" name="vehiclePhotos" placeholder="Drop links to photos of your rides, or describe."></textarea>
-          </div>
+        <div class="form-row">
+          <label class="form-label">Vehicle Photos (links or notes)</label>
+          <textarea class="form-textarea" name="vehiclePhotos" placeholder="Drop links to photos of your rides, or describe."></textarea>
         </div>
+
         <div class="form-actions">
           <button type="submit" class="btn-submit" id="submit-btn">Submit for Review</button>
           <button type="reset" class="btn-clear">Clear Form</button>
@@ -233,10 +259,13 @@
       await addDoc(collection(db, 'listings'), {
         bizName: f.bizName.value.trim(), bizType: f.bizType.value.trim(),
         location: f.location.value.trim(), address: f.address.value.trim(),
-        ownerName: f.ownerName.value.trim(), contact: f.contact.value.trim(),
-        website: f.website.value.trim(), bio: f.bio.value.trim(),
+        contact: f.contact.value.trim(), website: f.website.value.trim(),
+        specialties: f.specialties.value.trim(), bizPhotos: f.bizPhotos.value.trim(),
+        ownerName: f.ownerName.value.trim(), ownerContact: f.ownerContact.value.trim(),
+        bio: f.bio.value.trim(), sideWork: f.sideWork.value.trim(),
+        communityOffer: f.communityOffer.value.trim(),
         currentRides: f.currentRides.value.trim(), pastRides: f.pastRides.value.trim(),
-        bizPhotos: f.bizPhotos.value.trim(), vehiclePhotos: f.vehiclePhotos.value.trim(),
+        vehiclePhotos: f.vehiclePhotos.value.trim(),
         status: 'pending', submittedAt: new Date().toISOString()
       });
       f.reset();
