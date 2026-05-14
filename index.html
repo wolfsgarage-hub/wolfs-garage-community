@@ -133,8 +133,8 @@
   <!-- SIGNUP TAB -->
   <section class="section" id="signup">
     <div class="section-head">
-      <h2>GET LISTED</h2>
-      <p>Submit your info. Wolf reviews every listing before it goes live. Usually within 48 hours.</p>
+      <h2>ADD YOUR BUSINESS</h2>
+      <p>Free to list. Submissions reviewed by Wolf before going live. Make it fun — people are gonna read this.</p>
     </div>
     <div class="form-card">
       <form id="signup-form">
@@ -144,8 +144,8 @@
             <input class="form-input" name="bizName" required placeholder="What do you call the shop?">
           </div>
           <div>
-            <label class="form-label">What You Do <span class="req">*</span></label>
-            <input class="form-input" name="bizType" required placeholder="Auto shop, painter, welder, fabricator...">
+            <label class="form-label">Business Type <span class="req">*</span></label>
+            <input class="form-input" name="bizType" required placeholder="auto shop, photographer, butcher, welder...">
           </div>
         </div>
         <div class="form-row split">
@@ -154,13 +154,13 @@
             <input class="form-input" name="location" required placeholder="Portland, OR">
           </div>
           <div>
-            <label class="form-label">Full Address <span class="req">*</span></label>
-            <input class="form-input" name="address" placeholder="123 Main St (optional — used for map pin)">
+            <label class="form-label">Address (optional, for map pin)</label>
+            <input class="form-input" name="address" placeholder="full street address">
           </div>
         </div>
         <div class="form-row split">
           <div>
-            <label class="form-label">Your Name <span class="req">*</span></label>
+            <label class="form-label">Owner Name <span class="req">*</span></label>
             <input class="form-input" name="ownerName" required placeholder="First name is fine">
           </div>
           <div>
@@ -173,29 +173,25 @@
           <input class="form-input" name="website" placeholder="https://... or @yourhandle">
         </div>
         <div class="form-row">
-          <label class="form-label">About You / Your Shop <span class="req">*</span></label>
-          <textarea class="form-textarea" name="bio" required style="min-height:120px;" placeholder="Write like you'd talk in the shop. Personality over polish. What do you do? Why do you do it? What's your specialty?"></textarea>
-          <div class="form-hint">No corporate speak. Tell the community who you are.</div>
+          <label class="form-label">Tell us about you <span class="req">*</span></label>
+          <textarea class="form-textarea" name="bio" required style="min-height:120px;" placeholder="What's your story? Why do you build / wrench / collect? Have fun with this — boring bios don't get read."></textarea>
+          <div class="form-hint">Write like you'd talk in the shop. Personality over polish.</div>
         </div>
-        <div class="form-row split">
-          <div>
-            <label class="form-label">Current Rides</label>
-            <textarea class="form-textarea" name="currentRides" placeholder="What are you driving or building right now?"></textarea>
-          </div>
-          <div>
-            <label class="form-label">Past Rides</label>
-            <textarea class="form-textarea" name="pastRides" placeholder="The one that got away. Or the first one. Whatever made you who you are."></textarea>
-          </div>
+        <div class="form-row">
+          <label class="form-label">What you currently drive / wrench on</label>
+          <textarea class="form-textarea" name="currentRides" placeholder="'67 C10, '49 GMC, '32 Ford coupe project..."></textarea>
         </div>
-        <div class="form-row split">
-          <div>
-            <label class="form-label">Business Photos</label>
-            <textarea class="form-textarea" name="bizPhotos" placeholder="Links to photos of your shop or work, or describe what you'd like featured."></textarea>
-          </div>
-          <div>
-            <label class="form-label">Vehicle Photos</label>
-            <textarea class="form-textarea" name="vehiclePhotos" placeholder="Links to your rides, or describe."></textarea>
-          </div>
+        <div class="form-row">
+          <label class="form-label">Vehicles you've owned in the past</label>
+          <textarea class="form-textarea" name="pastRides" placeholder="The ones that got away. The first car. The one that taught you how to weld."></textarea>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Business Photos (links or notes)</label>
+          <textarea class="form-textarea" name="bizPhotos" placeholder="Drop links to photos of your shop or work, or describe what you'd like featured."></textarea>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Vehicle Photos (links or notes)</label>
+          <textarea class="form-textarea" name="vehiclePhotos" placeholder="Links to your rides, or describe."></textarea>
         </div>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary" id="submit-btn">Submit for Review</button>
