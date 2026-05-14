@@ -297,7 +297,7 @@
           <div><div class="field-label">Owner</div><div class="field-val">${esc(l.ownerName)}</div></div>
           <div><div class="field-label">Contact</div><div class="field-val">${esc(l.contact)}${l.website ? '<br>'+esc(l.website) : ''}</div></div>
           ${l.address ? `<div><div class="field-label">Address</div><div class="field-val">${esc(l.address)}</div></div>` : ''}
-          <div><div class="field-label">Submitted</div><div class="field-val">${new Date(l.submittedAt).toLocaleDateString()}</div></div>
+          <div><div class="field-label">Submitted</div><div class="field-val">${l.submittedAt ? new Date(l.submittedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : 'Unknown'}</div></div>
         </div>
         <div class="card-bio">
           <div class="field-label">Bio</div>
