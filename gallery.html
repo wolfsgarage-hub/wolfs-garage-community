@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pack Gallery · Wolf's Garage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&family=Oswald:wght@500;700&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black:#0A0A0A; --ink:#1A1A1A; --bone:#F5F1E8;
+    --red:#CC0000; --red-dark:#990000; --copper:#C8922A;
+    --gray-warm:#2A2520; --line:rgba(245,241,232,0.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:var(--black);color:var(--bone);font-family:'Work Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:repeating-linear-gradient(90deg,transparent 0,transparent 49px,rgba(245,241,232,0.015) 49px,rgba(245,241,232,0.015) 50px),
+    radial-gradient(circle at 20% 30%,rgba(204,0,0,0.05) 0%,transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(200,146,42,0.04) 0%,transparent 40%);}
+  .container{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:0 20px;}
+
+  /* HEADER */
+  .top-bar{background:var(--black);border-bottom:3px solid var(--red);padding:20px 0;position:relative;}
+  .top-bar::after{content:'';position:absolute;left:0;right:0;bottom:-7px;height:1px;background:var(--copper);}
+  .brand{display:flex;align-items:center;gap:16px;}
+  .brand-mark{width:50px;height:50px;background:var(--red);border:2px solid var(--bone);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--bone);}
+  .brand-name{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--bone);letter-spacing:4px;}
+  .brand-tag{font-family:'Special Elite',monospace;font-size:11px;color:var(--copper);letter-spacing:1px;margin-top:2px;}
+
+  /* PINSTRIPE */
+  .pinstripe{width:100%;height:6px;margin:32px 0;position:relative;overflow:hidden;}
+  .pinstripe svg{width:100%;height:100%;}
+
+  /* HERO */
+  .hero{padding:50px 0 30px;border-bottom:1px solid var(--line);}
+  .hero-eyebrow{font-family:'Special Elite',monospace;font-size:12px;color:var(--red);letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;}
+  .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,8vw,90px);line-height:0.9;color:var(--bone);margin-bottom:16px;}
+  .hero h1 .accent{color:var(--red);font-style:italic;}
+  .hero-sub{font-size:16px;line-height:1.6;color:rgba(245,241,232,0.7);max-width:540px;}
+
+  /* TABS */
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:32px;overflow-x:auto;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{font-family:'Oswald',sans-serif;font-size:13px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:18px 22px;background:transparent;color:rgba(245,241,232,0.5);border:none;cursor:pointer;position:relative;white-space:nowrap;transition:color 0.2s;}
+  .tab:hover{color:var(--bone);}
+  .tab.active{color:var(--bone);}
+  .tab.active::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--red);}
+  .section{display:none;padding:20px 0 80px;}
+  .section.active{display:block;}
+
+  /* PHOTO GRID */
+  .photo-grid{columns:2;gap:10px;}
+  @media(min-width:600px){.photo-grid{columns:3;}}
+  @media(min-width:900px){.photo-grid{columns:4;}}
+  .photo-item{break-inside:avoid;margin-bottom:10px;position:relative;cursor:pointer;overflow:hidden;background:var(--gray-warm);}
+  .photo-item img{width:100%;display:block;transition:transform 0.3s;}
+  .photo-item:hover img{transform:scale(1.04);}
+  .photo-item::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.4) 0%,transparent 50%);opacity:0;transition:opacity 0.3s;}
+  .photo-item:hover::after{opacity:1;}
+
+  /* LIGHTBOX */
+  .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+  .lightbox.open{display:flex;}
+  .lightbox img{max-width:100%;max-height:90vh;object-fit:contain;}
+  .lightbox-close{position:absolute;top:20px;right:20px;background:var(--red);color:var(--bone);border:none;width:44px;height:44px;font-size:22px;cursor:pointer;font-family:'Oswald',sans-serif;display:flex;align-items:center;justify-content:center;}
+  .lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(204,0,0,0.7);color:var(--bone);border:none;width:44px;height:60px;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .lightbox-prev{left:10px;}
+  .lightbox-next{right:10px;}
+
+  /* SUBMIT ZONE */
+  .submit-zone{border:2px dashed rgba(245,241,232,0.2);padding:60px 20px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;}
+  .submit-zone:hover,.submit-zone.drag{border-color:var(--red);background:rgba(204,0,0,0.05);}
+  .submit-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .submit-icon{font-size:48px;margin-bottom:16px;opacity:0.5;}
+  .submit-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--bone);margin-bottom:8px;}
+  .submit-sub{font-size:14px;color:rgba(245,241,232,0.5);}
+  .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin:20px 0;}
+  .preview-thumb{aspect-ratio:1;overflow:hidden;position:relative;}
+  .preview-thumb img{width:100%;height:100%;object-fit:cover;}
+  .preview-thumb button{position:absolute;top:4px;right:4px;background:var(--red);color:var(--bone);border:none;width:22px;height:22px;font-size:14px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;}
+
+  /* SUBMIT BTN */
+  .btn{font-family:'Oswald',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;padding:14px 28px;border:none;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px;}
+  .btn-primary{background:var(--red);color:var(--bone);border:2px solid var(--red);}
+  .btn-primary:hover{background:var(--red-dark);}
+  .btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+  .submit-actions{margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;}
+
+  /* EMPTY / LOADING */
+  .empty{text-align:center;padding:80px 20px;}
+  .empty-icon{font-size:48px;margin-bottom:16px;opacity:0.3;}
+  .empty-text{font-family:'Bebas Neue',sans-serif;font-size:20px;color:rgba(245,241,232,0.4);letter-spacing:2px;line-height:1.4;}
+  .loading{text-align:center;padding:60px;font-family:'Oswald',sans-serif;letter-spacing:3px;color:var(--copper);}
+  .spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--copper);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--red);color:var(--bone);font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:2px;padding:14px 28px;z-index:999;transition:transform 0.3s;pointer-events:none;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
+  .section-head{margin-bottom:28px;}
+  .section-head h2{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:6px;}
+  .section-head p{color:rgba(245,241,232,0.6);font-size:14px;}
+
+  .footer{background:var(--ink);border-top:1px solid var(--line);padding:30px 0;margin-top:60px;}
+  .footer .container{font-family:'Special Elite',monospace;font-size:11px;color:rgba(245,241,232,0.4);letter-spacing:2px;text-align:center;}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="container">
+    <div class="brand">
+      <div class="brand-mark">W</div>
+      <div>
+        <div class="brand-name">WOLF'S GARAGE</div>
+        <div class="brand-tag">PACK GALLERY</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">Hot Rods · Builds · Real Machines</div>
+    <h1>THE <span class="accent">PACK</span><br>GALLERY</h1>
+    <p class="hero-sub">Wolf's shots and the community's iron. Submit yours — no account, no form, just the photo.</p>
+  </div>
+</div>
+
+<div class="container" style="margin-top:0;">
+
+  <div class="pinstripe">
+    <svg viewBox="0 0 1200 6" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,3 Q150,0 300,3 Q450,6 600,3 Q750,0 900,3 Q1050,6 1200,3" stroke="#CC0000" stroke-width="2.5" fill="none" opacity="0.8"/>
+      <path d="M0,3 Q150,6 300,3 Q450,0 600,3 Q750,6 900,3 Q1050,0 1200,3" stroke="#C8922A" stroke-width="1" fill="none" opacity="0.5"/>
+    </svg>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="wolfs-photos" onclick="switchTab('wolfs-photos')">Wolf's Photos</button>
+    <button class="tab" data-tab="pack-photos" onclick="switchTab('pack-photos')">Pack Photos</button>
+    <button class="tab" data-tab="submit" onclick="switchTab('submit')">Submit a Photo</button>
+  </div>
+
+  <!-- WOLF'S PHOTOS -->
+  <section class="section active" id="wolfs-photos">
+    <div class="section-head">
+      <h2>WOLF'S SHOTS</h2>
+      <p>From the garage, the road, and everywhere in between.</p>
+    </div>
+    <div id="wolfs-grid" class="photo-grid">
+      <div class="loading"><span class="spinner"></span>LOADING...</div>
+    </div>
+  </section>
+
+  <!-- PACK PHOTOS -->
+  <section class="section" id="pack-photos">
+    <div class="section-head">
+      <h2>THE PACK</h2>
+      <p>Community submissions. Real iron from real people.</p>
+    </div>
+    <div id="pack-grid" class="photo-grid">
+      <div class="loading"><span class="spinner"></span>LOADING...</div>
+    </div>
+  </section>
+
+  <!-- SUBMIT -->
+  <section class="section" id="submit">
+    <div class="section-head">
+      <h2>ADD YOUR SHOT</h2>
+      <p>Anonymous. No account. No form. Just the photo — Wolf reviews before it goes live.</p>
+    </div>
+    <div class="submit-zone" id="drop-zone">
+      <input type="file" id="photo-input" accept="image/*" multiple>
+      <div class="submit-icon">📷</div>
+      <div class="submit-title">TAP TO PICK PHOTOS</div>
+      <div class="submit-sub">Or drag and drop · JPG, PNG, HEIC · Multiple OK</div>
+    </div>
+    <div class="preview-grid" id="preview-grid"></div>
+    <div class="submit-actions" id="submit-actions" style="display:none;">
+      <button class="btn btn-primary" id="submit-btn" onclick="submitPhotos()">Submit to the Pack</button>
+      <button class="btn" style="background:transparent;border:2px solid var(--bone);color:var(--bone);" onclick="clearPreviews()">Clear</button>
+    </div>
+  </section>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-nav lightbox-prev" onclick="navLightbox(-1);event.stopPropagation()">‹</button>
+  <img id="lightbox-img" src="" alt="">
+  <button class="lightbox-nav lightbox-next" onclick="navLightbox(1);event.stopPropagation()">›</button>
+</div>
+
+<div class="footer">
+  <div class="container">WOLF'S GARAGE LLC · PORTLAND, OREGON · GET BACK IN THE GARAGE</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+  import { getFirestore, collection, addDoc, getDocs, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAGcEHgch3ofFWFDUlYphyaXAxqk06DAQ0",
+    authDomain: "wolfs-garage-directory.firebaseapp.com",
+    projectId: "wolfs-garage-directory",
+    storageBucket: "wolfs-garage-directory.firebasestorage.app",
+    messagingSenderId: "868695357399",
+    appId: "1:868695357399:web:022c9974691fd183d77d92"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let pendingFiles = [];
+  let lightboxPhotos = [];
+  let lightboxIndex = 0;
+
+  // ── TABS ──
+  window.switchTab = function(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelector(`.tab[data-tab="${name}"]`).classList.add('active');
+    document.getElementById(name).classList.add('active');
+    if (name === 'wolfs-photos') renderWolfsPhotos();
+    if (name === 'pack-photos') renderPackPhotos();
+    window.scrollTo({top:0,behavior:'smooth'});
+  };
+
+  // ── RENDER WOLF'S PHOTOS ──
+  async function renderWolfsPhotos() {
+    const grid = document.getElementById('wolfs-grid');
+    grid.innerHTML = '<div class="loading"><span class="spinner"></span>LOADING...</div>';
+    try {
+      const q = query(collection(db, 'wolf_photos'), orderBy('addedAt', 'desc'));
+      const snap = await getDocs(q);
+      const photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      lightboxPhotos = photos.map(p => p.imageData);
+      if (photos.length === 0) {
+        grid.innerHTML = '<div class="empty"><div class="empty-icon">🔧</div><div class="empty-text">NOTHING YET.<br>CHECK BACK SOON.</div></div>';
+        return;
+      }
+      grid.innerHTML = photos.map((p,i) => `
+        <div class="photo-item" onclick="openLightbox(${i},'wolf')">
+          <img src="${p.imageData}" loading="lazy" alt="Wolf's photo">
+        </div>
+      `).join('');
+    } catch(e) {
+      grid.innerHTML = '<div class="empty"><div class="empty-icon">⚠</div><div class="empty-text">COULDN\'T LOAD.<br>CHECK CONNECTION.</div></div>';
+    }
+  }
+
+  // ── RENDER PACK PHOTOS ──
+  async function renderPackPhotos() {
+    const grid = document.getElementById('pack-grid');
+    grid.innerHTML = '<div class="loading"><span class="spinner"></span>LOADING...</div>';
+    try {
+      const q = query(collection(db, 'pack_photos'), where('status','==','approved'));
+      const snap = await getDocs(q);
+      const photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      lightboxPhotos = photos.map(p => p.imageData);
+      if (photos.length === 0) {
+        grid.innerHTML = '<div class="empty"><div class="empty-icon">📷</div><div class="empty-text">NO PACK PHOTOS YET.<br>BE THE FIRST TO SUBMIT.</div></div>';
+        return;
+      }
+      grid.innerHTML = photos.map((p,i) => `
+        <div class="photo-item" onclick="openLightbox(${i},'pack')">
+          <img src="${p.imageData}" loading="lazy" alt="Pack photo">
+        </div>
+      `).join('');
+    } catch(e) {
+      grid.innerHTML = '<div class="empty"><div class="empty-icon">⚠</div><div class="empty-text">COULDN\'T LOAD.<br>CHECK CONNECTION.</div></div>';
+    }
+  }
+
+  // ── FILE INPUT ──
+  const photoInput = document.getElementById('photo-input');
+  const dropZone = document.getElementById('drop-zone');
+
+  photoInput.addEventListener('change', e => handleFiles(Array.from(e.target.files)));
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag');
+    handleFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+  });
+
+  function handleFiles(files) {
+    files.forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      pendingFiles.push(file);
+      const reader = new FileReader();
+      reader.onload = e => addPreview(e.target.result, pendingFiles.length - 1);
+      reader.readAsDataURL(file);
+    });
+    document.getElementById('submit-actions').style.display = pendingFiles.length > 0 ? 'flex' : 'none';
+  }
+
+  function addPreview(dataUrl, idx) {
+    const grid = document.getElementById('preview-grid');
+    const div = document.createElement('div');
+    div.className = 'preview-thumb';
+    div.id = `preview-${idx}`;
+    div.innerHTML = `<img src="${dataUrl}"><button onclick="removePreview(${idx})">✕</button>`;
+    grid.appendChild(div);
+  }
+
+  window.removePreview = function(idx) {
+    pendingFiles[idx] = null;
+    const el = document.getElementById(`preview-${idx}`);
+    if (el) el.remove();
+    if (pendingFiles.every(f => f === null)) {
+      pendingFiles = [];
+      document.getElementById('submit-actions').style.display = 'none';
+    }
+  };
+
+  window.clearPreviews = function() {
+    pendingFiles = [];
+    document.getElementById('preview-grid').innerHTML = '';
+    document.getElementById('submit-actions').style.display = 'none';
+    photoInput.value = '';
+  };
+
+  // ── COMPRESS ──
+  function compressImage(file, maxPx = 1400, quality = 0.78) {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width, h = img.height;
+          if (w > maxPx || h > maxPx) {
+            if (w > h) { h = Math.round(h * maxPx / w); w = maxPx; }
+            else { w = Math.round(w * maxPx / h); h = maxPx; }
+          }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ── SUBMIT ──
+  window.submitPhotos = async function() {
+    const files = pendingFiles.filter(Boolean);
+    if (files.length === 0) return;
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>SENDING...';
+    try {
+      for (const file of files) {
+        const imageData = await compressImage(file);
+        await addDoc(collection(db, 'pack_photos'), {
+          imageData,
+          status: 'pending',
+          submittedAt: new Date().toISOString()
+        });
+      }
+      window.clearPreviews();
+      showToast(`${files.length} PHOTO${files.length > 1 ? 'S' : ''} SUBMITTED — WOLF WILL REVIEW`);
+    } catch(e) {
+      showToast('ERROR — TRY AGAIN');
+      console.error(e);
+    }
+    btn.disabled = false;
+    btn.innerHTML = 'Submit to the Pack';
+  };
+
+  // ── LIGHTBOX ──
+  let currentLightboxSet = [];
+
+  window.openLightbox = function(idx, set) {
+    currentLightboxSet = lightboxPhotos;
+    lightboxIndex = idx;
+    document.getElementById('lightbox-img').src = currentLightboxSet[idx];
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeLightbox = function(e) {
+    if (e && e.target !== document.getElementById('lightbox') && e.target !== document.querySelector('.lightbox-close')) return;
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  window.navLightbox = function(dir) {
+    lightboxIndex = (lightboxIndex + dir + currentLightboxSet.length) % currentLightboxSet.length;
+    document.getElementById('lightbox-img').src = currentLightboxSet[lightboxIndex];
+  };
+
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'ArrowRight') window.navLightbox(1);
+    if (e.key === 'ArrowLeft') window.navLightbox(-1);
+    if (e.key === 'Escape') { document.getElementById('lightbox').classList.remove('open'); document.body.style.overflow=''; }
+  });
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // ── INIT ──
+  renderWolfsPhotos();
+</script>
+</body>
+</html>

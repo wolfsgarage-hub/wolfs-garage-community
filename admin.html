@@ -89,6 +89,18 @@
   .spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--copper);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px;vertical-align:middle;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
+  /* PACK PHOTO CARDS */
+  .photo-card{background:var(--gray-warm);border:1px solid var(--line);padding:16px;margin-bottom:12px;display:flex;gap:16px;align-items:flex-start;}
+  .photo-card.pending{border-left:3px solid var(--copper);}
+  .photo-card.approved{border-left:3px solid #4CAF50;}
+  .photo-card.rejected{border-left:3px solid var(--gray-mid);opacity:0.65;}
+  .photo-thumb{width:120px;height:120px;object-fit:cover;flex-shrink:0;}
+  .upload-zone{border:2px dashed rgba(245,241,232,0.2);padding:50px 20px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;}
+  .upload-zone:hover{border-color:var(--red);background:rgba(204,0,0,0.05);}
+  .wolf-photo-item{position:relative;aspect-ratio:1;overflow:hidden;background:var(--gray-warm);}
+  .wolf-photo-item img{width:100%;height:100%;object-fit:cover;}
+  .wolf-photo-item button{position:absolute;top:4px;right:4px;background:var(--red-dark);color:var(--bone);border:none;width:26px;height:26px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;}
+
   /* TOAST */
   .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--red);color:var(--bone);font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:2px;padding:14px 28px;z-index:999;transition:transform 0.3s;pointer-events:none;}
   .toast.show{transform:translateX(-50%) translateY(0);}
@@ -140,13 +152,48 @@
   <div class="main">
     <div class="tabs">
       <button class="tab active" data-tab="listings" onclick="switchPanel('listings')">
-        Listings <span class="tab-badge" id="badge-pending">0</span>
+        Directory <span class="tab-badge" id="badge-pending">0</span>
+      </button>
+      <button class="tab" data-tab="pack-photos" onclick="switchPanel('pack-photos')">
+        Pack Photos <span class="tab-badge" id="badge-photos">0</span>
+      </button>
+      <button class="tab" data-tab="wolfs-photos" onclick="switchPanel('wolfs-photos')">
+        Wolf's Photos
       </button>
     </div>
 
     <div class="panel active" id="listings">
       <div class="loading" id="listings-loading"><span class="spinner"></span>LOADING...</div>
       <div id="listings-content"></div>
+    </div>
+
+    <div class="panel" id="pack-photos">
+      <div class="loading" id="photos-loading"><span class="spinner"></span>LOADING...</div>
+      <div id="photos-content"></div>
+    </div>
+
+    <div class="panel" id="wolfs-photos">
+      <div style="margin-bottom:24px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:6px;">UPLOAD WOLF'S PHOTOS</div>
+        <div style="color:rgba(245,241,232,0.6);font-size:14px;">Instant live — no review. Tap or drag to add.</div>
+      </div>
+      <div class="upload-zone" id="wolf-drop-zone">
+        <input type="file" id="wolf-photo-input" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
+        <div style="font-size:48px;margin-bottom:12px;opacity:0.5;">📷</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;margin-bottom:6px;">TAP TO UPLOAD</div>
+        <div style="font-size:13px;color:rgba(245,241,232,0.5);">Multiple photos OK · Compressed automatically</div>
+      </div>
+      <div id="wolf-preview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin:16px 0;"></div>
+      <div id="wolf-submit-row" style="display:none;gap:12px;margin-top:12px;">
+        <button class="btn btn-approve" id="wolf-upload-btn" onclick="uploadWolfPhotos()">⬆ PUBLISH NOW</button>
+        <button class="btn" style="background:transparent;border:1px solid rgba(245,241,232,0.3);color:var(--bone);" onclick="clearWolfPreviews()">Clear</button>
+      </div>
+      <div style="margin-top:40px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:16px;">LIVE PHOTOS</div>
+        <div id="wolf-live-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">
+          <div class="loading"><span class="spinner"></span>LOADING...</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -155,7 +202,7 @@
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-  import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+  import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, addDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyAGcEHgch3ofFWFDUlYphyaXAxqk06DAQ0",
@@ -305,8 +352,189 @@
     showToast('BACKUP DOWNLOADED');
   };
 
-  // ── TOAST ──
-  function showToast(msg) {
+  // ── PACK PHOTOS ──
+  let allPackPhotos = [];
+
+  async function loadPackPhotos() {
+    document.getElementById('photos-loading').style.display = 'block';
+    document.getElementById('photos-content').innerHTML = '';
+    try {
+      const snap = await getDocs(collection(db, 'pack_photos'));
+      allPackPhotos = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+      renderPackPhotos();
+    } catch(e) {
+      document.getElementById('photos-loading').style.display = 'none';
+      document.getElementById('photos-content').innerHTML = `<div class="empty">ERROR LOADING PHOTOS</div>`;
+    }
+  }
+
+  function renderPackPhotos() {
+    document.getElementById('photos-loading').style.display = 'none';
+    const order = { pending:0, approved:1, rejected:2 };
+    const sorted = [...allPackPhotos].sort((a,b) => order[a.status] - order[b.status] || new Date(b.submittedAt) - new Date(a.submittedAt));
+    const pending = allPackPhotos.filter(p => p.status === 'pending').length;
+    document.getElementById('badge-photos').textContent = pending;
+    if (sorted.length === 0) {
+      document.getElementById('photos-content').innerHTML = `<div class="empty">NO PHOTO SUBMISSIONS YET.</div>`;
+      return;
+    }
+    document.getElementById('photos-content').innerHTML = sorted.map(p => `
+      <div class="photo-card ${p.status}">
+        <img class="photo-thumb" src="${p.imageData}" alt="Submission">
+        <div class="photo-meta">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <span class="status-pill ${p.status}">${p.status}</span>
+            <span style="font-size:12px;color:rgba(245,241,232,0.4);">${new Date(p.submittedAt).toLocaleDateString()}</span>
+          </div>
+          <div class="btn-row" style="padding-top:0;border-top:none;">
+            ${p.status !== 'approved' ? `<button class="btn btn-approve" onclick="setPhotoStatus('${p._id}','approved')">✓ Approve</button>` : ''}
+            ${p.status !== 'rejected' ? `<button class="btn btn-reject" onclick="setPhotoStatus('${p._id}','rejected')">✗ Reject</button>` : ''}
+            ${p.status !== 'pending' ? `<button class="btn btn-requeue" onclick="setPhotoStatus('${p._id}','pending')">↺ Re-queue</button>` : ''}
+            <button class="btn btn-delete" onclick="deletePhoto('${p._id}')">🗑</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  window.setPhotoStatus = async function(id, status) {
+    try {
+      await updateDoc(doc(db, 'pack_photos', id), { status });
+      const idx = allPackPhotos.findIndex(p => p._id === id);
+      if (idx > -1) allPackPhotos[idx].status = status;
+      renderPackPhotos();
+      showToast(status === 'approved' ? 'PHOTO NOW LIVE' : status === 'rejected' ? 'PHOTO REJECTED' : 'RE-QUEUED');
+    } catch(e) { showToast('ERROR'); }
+  };
+
+  window.deletePhoto = async function(id) {
+    if (!confirm('Delete this photo permanently?')) return;
+    try {
+      await deleteDoc(doc(db, 'pack_photos', id));
+      allPackPhotos = allPackPhotos.filter(p => p._id !== id);
+      renderPackPhotos();
+      showToast('DELETED');
+    } catch(e) { showToast('ERROR'); }
+  };
+
+  // ── WOLF'S PHOTOS ──
+  let wolfPendingFiles = [];
+  let wolfLivePhotos = [];
+
+  const wolfInput = document.getElementById('wolf-photo-input');
+  wolfInput.addEventListener('change', e => handleWolfFiles(Array.from(e.target.files)));
+
+  function handleWolfFiles(files) {
+    files.forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      wolfPendingFiles.push(file);
+      const reader = new FileReader();
+      reader.onload = e => {
+        const grid = document.getElementById('wolf-preview-grid');
+        const div = document.createElement('div');
+        div.className = 'wolf-photo-item';
+        div.id = `wprev-${wolfPendingFiles.length-1}`;
+        div.innerHTML = `<img src="${e.target.result}"><button onclick="removeWolfPreview(${wolfPendingFiles.length-1})">✕</button>`;
+        grid.appendChild(div);
+      };
+      reader.readAsDataURL(file);
+    });
+    document.getElementById('wolf-submit-row').style.display = wolfPendingFiles.length > 0 ? 'flex' : 'none';
+  }
+
+  window.removeWolfPreview = function(idx) {
+    wolfPendingFiles[idx] = null;
+    const el = document.getElementById(`wprev-${idx}`);
+    if (el) el.remove();
+    if (wolfPendingFiles.every(f => f === null)) { wolfPendingFiles = []; document.getElementById('wolf-submit-row').style.display = 'none'; }
+  };
+
+  window.clearWolfPreviews = function() {
+    wolfPendingFiles = [];
+    document.getElementById('wolf-preview-grid').innerHTML = '';
+    document.getElementById('wolf-submit-row').style.display = 'none';
+    wolfInput.value = '';
+  };
+
+  window.uploadWolfPhotos = async function() {
+    const files = wolfPendingFiles.filter(Boolean);
+    if (!files.length) return;
+    const btn = document.getElementById('wolf-upload-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>UPLOADING...';
+    try {
+      for (const file of files) {
+        const imageData = await compressImage(file);
+        await addDoc(collection(db, 'wolf_photos'), { imageData, addedAt: new Date().toISOString() });
+      }
+      window.clearWolfPreviews();
+      showToast(`${files.length} PHOTO${files.length>1?'S':''} PUBLISHED`);
+      loadWolfLivePhotos();
+    } catch(e) { showToast('UPLOAD ERROR'); console.error(e); }
+    btn.disabled = false;
+    btn.innerHTML = '⬆ PUBLISH NOW';
+  };
+
+  async function loadWolfLivePhotos() {
+    const grid = document.getElementById('wolf-live-grid');
+    grid.innerHTML = '<div class="loading"><span class="spinner"></span>LOADING...</div>';
+    try {
+      const q = query(collection(db, 'wolf_photos'), orderBy('addedAt', 'desc'));
+      const snap = await getDocs(q);
+      wolfLivePhotos = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+      if (wolfLivePhotos.length === 0) {
+        grid.innerHTML = '<div class="empty">NO PHOTOS UPLOADED YET.</div>';
+        return;
+      }
+      grid.innerHTML = wolfLivePhotos.map(p => `
+        <div class="wolf-photo-item">
+          <img src="${p.imageData}" loading="lazy">
+          <button onclick="deleteWolfPhoto('${p._id}')">✕</button>
+        </div>
+      `).join('');
+    } catch(e) { grid.innerHTML = '<div class="empty">ERROR LOADING.</div>'; }
+  }
+
+  window.deleteWolfPhoto = async function(id) {
+    if (!confirm('Remove this photo?')) return;
+    try {
+      await deleteDoc(doc(db, 'wolf_photos', id));
+      wolfLivePhotos = wolfLivePhotos.filter(p => p._id !== id);
+      loadWolfLivePhotos();
+      showToast('REMOVED');
+    } catch(e) { showToast('ERROR'); }
+  };
+
+  // ── COMPRESS ──
+  function compressImage(file, maxPx=1400, quality=0.78) {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w=img.width, h=img.height;
+          if (w>maxPx||h>maxPx) { if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}else{w=Math.round(w*maxPx/h);h=maxPx;} }
+          canvas.width=w; canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          resolve(canvas.toDataURL('image/jpeg',quality));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Update switchPanel to load data
+  const _origSwitchPanel = window.switchPanel;
+  window.switchPanel = function(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelector(`.tab[data-tab="${name}"]`).classList.add('active');
+    document.getElementById(name).classList.add('active');
+    if (name === 'pack-photos' && allPackPhotos.length === 0) loadPackPhotos();
+    if (name === 'wolfs-photos' && wolfLivePhotos.length === 0) loadWolfLivePhotos();
+  };
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.classList.add('show');
