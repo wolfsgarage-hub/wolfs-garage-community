@@ -39,14 +39,19 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .feat-bio{font-size:12px;line-height:1.5;color:rgba(245,241,232,0.75);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .feat-loc{font-size:11px;color:rgba(245,241,232,0.5);margin-top:8px;}
 .feat-empty{font-family:'Special Elite',monospace;font-size:11px;color:rgba(245,241,232,0.3);letter-spacing:1px;text-align:center;padding:40px 0;}
-.filter-bar{display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap;}
+.filter-bar{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+.filter-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .filter-label{font-family:'Special Elite',monospace;font-size:12px;color:var(--copper);letter-spacing:2px;white-space:nowrap;}
-.filter-select{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;flex:1;min-width:220px;max-width:340px;}
+.filter-select{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;flex:1;min-width:200px;}
 .filter-select:focus{outline:none;border-color:var(--red);}
-.filter-input{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;width:100px;text-align:center;}
+.zip-group{display:inline-flex;align-items:center;gap:8px;flex-wrap:nowrap;}
+.filter-input{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 12px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;width:90px;text-align:center;}
 .filter-input:focus{outline:none;border-color:var(--red);}
-.filter-radius{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;}
+.filter-radius{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;flex:1;min-width:140px;}
 .filter-radius:focus{outline:none;border-color:var(--red);}
+.locate-btn{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:8px 12px;font-size:16px;cursor:pointer;line-height:1;}
+.locate-btn:hover{border-color:var(--red);}
+.locate-btn:active{background:var(--red);}
 .map-wrap{margin-bottom:32px;position:relative;overflow:hidden;height:300px;border:1px solid var(--line);}
 
 .map-overlay{position:absolute;inset:0;pointer-events:none;border:2px solid var(--red);}
@@ -162,31 +167,38 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
   <!-- SERVICE FILTER + MAP -->
   <div class="filter-bar">
-    <div class="filter-label">// I'M LOOKING FOR...</div>
-    <select class="filter-select" id="service-filter" onchange="applyFilters()">
-      <option value="">— ALL BUSINESSES —</option>
-      <option value="auto shop">Auto Shop</option>
-      <option value="fabricator">Fabricator</option>
-      <option value="painter">Painter / Pinstriper</option>
-      <option value="welder">Welder</option>
-      <option value="photographer">Photographer</option>
-      <option value="upholstery">Upholstery</option>
-      <option value="parts">Parts / Salvage</option>
-      <option value="detailing">Detailing</option>
-      <option value="machinist">Machinist</option>
-      <option value="restoration">Restoration</option>
-      <option value="towing">Towing / Hauling</option>
-      <option value="other">Other</option>
-    </select>
-    <div class="filter-label">// ZIP</div>
-    <input class="filter-input" type="text" id="zip-filter" inputmode="numeric" pattern="\d{5}" maxlength="5" value="97217" onchange="setZipFromInput(this.value)">
-    <select class="filter-radius" id="radius-filter" onchange="applyFilters()">
-      <option value="25">within 25 mi</option>
-      <option value="10">within 10 mi</option>
-      <option value="50">within 50 mi</option>
-      <option value="100">within 100 mi</option>
-      <option value="0">any distance</option>
-    </select>
+    <div class="filter-row">
+      <div class="filter-label">// I'M LOOKING FOR...</div>
+      <select class="filter-select" id="service-filter" onchange="applyFilters()">
+        <option value="">— ALL BUSINESSES —</option>
+        <option value="auto shop">Auto Shop</option>
+        <option value="fabricator">Fabricator</option>
+        <option value="painter">Painter / Pinstriper</option>
+        <option value="welder">Welder</option>
+        <option value="photographer">Photographer</option>
+        <option value="upholstery">Upholstery</option>
+        <option value="parts">Parts / Salvage</option>
+        <option value="detailing">Detailing</option>
+        <option value="machinist">Machinist</option>
+        <option value="restoration">Restoration</option>
+        <option value="towing">Towing / Hauling</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <div class="zip-group">
+        <span class="filter-label">// ZIP</span>
+        <input class="filter-input" type="text" id="zip-filter" inputmode="numeric" pattern="\d{5}" maxlength="5" value="97217" onchange="setZipFromInput(this.value)">
+        <button type="button" class="locate-btn" id="locate-btn" onclick="detectUserZip()" title="Use my location">📍</button>
+      </div>
+      <select class="filter-radius" id="radius-filter" onchange="applyFilters()">
+        <option value="25">within 25 mi</option>
+        <option value="10">within 10 mi</option>
+        <option value="50">within 50 mi</option>
+        <option value="100">within 100 mi</option>
+        <option value="0">any distance</option>
+      </select>
+    </div>
   </div>
   <div class="map-wrap">
     <div id="map" style="width:100%;height:100%;"></div>
@@ -751,14 +763,31 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     });
   }
 
-  function detectUserZip() {
-    if (!navigator.geolocation) { geocodeZipAndApply(DEFAULT_ZIP); return; }
+  window.detectUserZip = function() {
+    console.log('[ZIP] detectUserZip called');
+    const btn = document.getElementById('locate-btn');
+    if (btn) btn.textContent = '⏳';
+    if (!navigator.geolocation) {
+      console.warn('[ZIP] navigator.geolocation not available');
+      if (btn) btn.textContent = '📍';
+      geocodeZipAndApply(DEFAULT_ZIP);
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
-      pos => reverseGeocodeToZip(pos.coords.latitude, pos.coords.longitude),
-      () => geocodeZipAndApply(DEFAULT_ZIP),
-      { timeout: 6000, maximumAge: 600000 }
+      pos => {
+        console.log('[ZIP] geolocation got coords:', pos.coords.latitude, pos.coords.longitude);
+        if (btn) btn.textContent = '📍';
+        reverseGeocodeToZip(pos.coords.latitude, pos.coords.longitude);
+      },
+      err => {
+        console.warn('[ZIP] geolocation error:', err.code, err.message);
+        if (btn) btn.textContent = '📍';
+        // Don't override the current ZIP if user already had something set
+        if (!currentZipLatLng) geocodeZipAndApply(DEFAULT_ZIP);
+      },
+      { timeout: 10000, maximumAge: 60000, enableHighAccuracy: false }
     );
-  }
+  };
 
   function reverseGeocodeToZip(lat, lng) {
     if (!geocoder) { setTimeout(() => reverseGeocodeToZip(lat, lng), 200); return; }
@@ -777,10 +806,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     });
   }
 
-  // Run auto-detect after map (and geocoder) are ready
+  // Auto-attempt geolocation on first load. If the browser prompt doesn't appear or the user
+  // denies/dismisses, the default ZIP stays as the active filter. User can manually tap the
+  // 📍 button next to the ZIP input to re-attempt after granting permission.
   function waitForGeocoderThenDetect() {
-    if (geocoder) detectUserZip();
-    else setTimeout(waitForGeocoderThenDetect, 200);
+    if (geocoder) {
+      console.log('[ZIP] Geocoder ready, attempting auto-detect');
+      detectUserZip();
+    } else {
+      setTimeout(waitForGeocoderThenDetect, 200);
+    }
   }
   waitForGeocoderThenDetect();
 
