@@ -556,11 +556,52 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     try {
       const snap = await getDocs(query(collection(db, 'listings'), where('status', '==', 'approved')));
       allListingsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      refreshServiceDropdown(allListingsData);
       renderCards(allListingsData);
       if (map) dropMarkers(allListingsData);
       else { const t = setInterval(() => { if(map){ dropMarkers(allListingsData); clearInterval(t); } }, 200); }
     } catch(e) {
       grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="icon">⚠</div><div>COULDN'T LOAD.<br>CHECK CONNECTION.</div></div>';
+    }
+  }
+
+  // ── DYNAMIC SERVICE DROPDOWN ──
+  // The curated base list. Dynamic types from listings are appended after these.
+  const CURATED_TYPES = [
+    'Auto Shop', 'Fabricator', 'Painter / Pinstriper', 'Welder', 'Photographer',
+    'Upholstery', 'Parts / Salvage', 'Detailing', 'Machinist', 'Restoration',
+    'Towing / Hauling', 'Other'
+  ];
+  function titleCase(s) {
+    return s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).replace(/\s+\/\s+/g, ' / ');
+  }
+  function refreshServiceDropdown(listings) {
+    const sel = document.getElementById('service-filter');
+    if (!sel) return;
+    const currentValue = sel.value;
+    // Normalize stored types: trim, dedupe case-insensitively against curated list
+    const curatedKeys = new Set(CURATED_TYPES.map(t => t.toLowerCase()));
+    const extras = new Map(); // key = lowercased, value = display string
+    listings.forEach(l => {
+      const raw = (l.bizType || '').trim();
+      if (!raw) return;
+      const key = raw.toLowerCase();
+      if (curatedKeys.has(key)) return; // already in curated list
+      if (!extras.has(key)) extras.set(key, titleCase(raw));
+    });
+    const dynamicTypes = Array.from(extras.values()).sort();
+    // Rebuild options: ALL → curated (no Other yet) → dynamic → Other (always last)
+    const curatedWithoutOther = CURATED_TYPES.filter(t => t !== 'Other');
+    const opts = [
+      `<option value="">— ALL BUSINESSES —</option>`,
+      ...curatedWithoutOther.map(t => `<option value="${t.toLowerCase()}">${t}</option>`),
+      ...dynamicTypes.map(t => `<option value="${t.toLowerCase()}">${t}</option>`),
+      `<option value="other">Other</option>`
+    ];
+    sel.innerHTML = opts.join('');
+    // Preserve current selection if still valid
+    if (currentValue && Array.from(sel.options).some(o => o.value === currentValue)) {
+      sel.value = currentValue;
     }
   }
 
