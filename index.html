@@ -45,7 +45,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .filter-select{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;flex:1;min-width:200px;}
 .filter-select:focus{outline:none;border-color:var(--red);}
 .type-group{display:flex;align-items:center;gap:4px;flex:1;min-width:200px;}
-.type-group .filter-select{flex:1;min-width:0;}
+.type-wrap{position:relative;flex:1;min-width:0;}
+.type-wrap .filter-select{width:100%;min-width:0;box-sizing:border-box;}
+.suggest-panel{position:absolute;top:100%;left:0;right:0;background:var(--black);border:1px solid var(--line);border-top:none;max-height:240px;overflow-y:auto;z-index:50;display:none;}
+.suggest-panel.open{display:block;}
+.suggest-item{padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;color:var(--bone);cursor:pointer;border-bottom:1px solid rgba(245,241,232,0.05);}
+.suggest-item:hover,.suggest-item.active{background:rgba(204,0,0,0.15);color:var(--bone);}
+.suggest-item:last-child{border-bottom:none;}
+.suggest-empty{padding:10px 14px;font-family:'Special Elite',monospace;font-size:11px;color:rgba(245,241,232,0.4);letter-spacing:1px;}
 .clear-btn{background:var(--black);border:1px solid var(--line);color:rgba(245,241,232,0.5);padding:8px 12px;font-size:18px;cursor:pointer;line-height:1;font-family:'Oswald',sans-serif;}
 .clear-btn:hover{border-color:var(--red);color:var(--bone);}
 .zip-group{display:inline-flex;align-items:center;gap:8px;flex-wrap:nowrap;}
@@ -174,10 +181,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div class="filter-row">
       <div class="filter-label">// I'M LOOKING FOR...</div>
       <div class="type-group">
-        <input class="filter-select" type="text" id="service-filter" list="service-types" placeholder="Type or pick a business type..." oninput="applyFilters()" onchange="applyFilters()">
+        <div class="type-wrap">
+          <input class="filter-select" type="text" id="service-filter" placeholder="Type or pick a business type..." autocomplete="off" oninput="onServiceInput()" onfocus="openSuggestions()" onblur="closeSuggestionsSoon()">
+          <div class="suggest-panel" id="suggest-panel" role="listbox"></div>
+        </div>
         <button type="button" class="clear-btn" id="clear-service-btn" onclick="clearService()" title="Clear">×</button>
       </div>
-      <datalist id="service-types"></datalist>
     </div>
     <div class="filter-row">
       <div class="zip-group">
@@ -559,19 +568,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     }
   }
 
-  // ── DYNAMIC TYPEAHEAD SUGGESTIONS ──
+  // ── CUSTOM TYPEAHEAD SUGGESTIONS ──
   // Curated types are always offered. Dynamic types from listings are added on top.
   const CURATED_TYPES = [
     'Auto Shop', 'Fabricator', 'Painter / Pinstriper', 'Welder', 'Photographer',
     'Upholstery', 'Parts / Salvage', 'Detailing', 'Machinist', 'Restoration',
     'Towing / Hauling', 'Other'
   ];
+  let allServiceTypes = [...CURATED_TYPES];
   function titleCase(s) {
     return s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).replace(/\s+\/\s+/g, ' / ');
   }
   function refreshServiceTypes(listings) {
-    const dl = document.getElementById('service-types');
-    if (!dl) return;
     const curatedKeys = new Set(CURATED_TYPES.map(t => t.toLowerCase()));
     const extras = new Map();
     listings.forEach(l => {
@@ -583,12 +591,45 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     });
     const dynamicTypes = Array.from(extras.values()).sort();
     const curatedWithoutOther = CURATED_TYPES.filter(t => t !== 'Other');
-    const all = [...curatedWithoutOther, ...dynamicTypes, 'Other'];
-    dl.innerHTML = all.map(t => `<option value="${t}"></option>`).join('');
+    allServiceTypes = [...curatedWithoutOther, ...dynamicTypes, 'Other'];
+    // If panel is currently open, refresh its contents
+    if (document.getElementById('suggest-panel').classList.contains('open')) {
+      renderSuggestions(document.getElementById('service-filter').value);
+    }
   }
+  function renderSuggestions(query) {
+    const panel = document.getElementById('suggest-panel');
+    const q = (query || '').trim().toLowerCase();
+    const matches = q ? allServiceTypes.filter(t => t.toLowerCase().includes(q)) : allServiceTypes;
+    if (!matches.length) {
+      panel.innerHTML = '<div class="suggest-empty">No match — press Enter to search anyway</div>';
+    } else {
+      panel.innerHTML = matches.map(t => `<div class="suggest-item" onmousedown="pickSuggestion('${t.replace(/'/g, "\\'")}')" ontouchstart="pickSuggestion('${t.replace(/'/g, "\\'")}')">${t}</div>`).join('');
+    }
+    panel.classList.add('open');
+  }
+  window.onServiceInput = function() {
+    renderSuggestions(document.getElementById('service-filter').value);
+    applyFilters();
+  };
+  window.openSuggestions = function() {
+    renderSuggestions(document.getElementById('service-filter').value);
+  };
+  window.closeSuggestionsSoon = function() {
+    // Slight delay so a tap on a suggestion can register before blur closes the panel
+    setTimeout(() => {
+      document.getElementById('suggest-panel').classList.remove('open');
+    }, 200);
+  };
+  window.pickSuggestion = function(value) {
+    const input = document.getElementById('service-filter');
+    input.value = value;
+    document.getElementById('suggest-panel').classList.remove('open');
+    applyFilters();
+  };
   window.clearService = function() {
     const input = document.getElementById('service-filter');
-    if (input) { input.value = ''; applyFilters(); input.focus(); }
+    if (input) { input.value = ''; document.getElementById('suggest-panel').classList.remove('open'); applyFilters(); }
   };
 
   // ── SET MAIN PHOTO ──
