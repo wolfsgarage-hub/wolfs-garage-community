@@ -43,6 +43,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .filter-label{font-family:'Special Elite',monospace;font-size:12px;color:var(--copper);letter-spacing:2px;white-space:nowrap;}
 .filter-select{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;flex:1;min-width:220px;max-width:340px;}
 .filter-select:focus{outline:none;border-color:var(--red);}
+.filter-input{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;width:100px;text-align:center;}
+.filter-input:focus{outline:none;border-color:var(--red);}
+.filter-radius{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;}
+.filter-radius:focus{outline:none;border-color:var(--red);}
 .map-wrap{margin-bottom:32px;position:relative;overflow:hidden;height:300px;border:1px solid var(--line);}
 
 .map-overlay{position:absolute;inset:0;pointer-events:none;border:2px solid var(--red);}
@@ -159,7 +163,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   <!-- SERVICE FILTER + MAP -->
   <div class="filter-bar">
     <div class="filter-label">// I'M LOOKING FOR...</div>
-    <select class="filter-select" id="service-filter" onchange="filterByService(this.value)">
+    <select class="filter-select" id="service-filter" onchange="applyFilters()">
       <option value="">— ALL BUSINESSES —</option>
       <option value="auto shop">Auto Shop</option>
       <option value="fabricator">Fabricator</option>
@@ -173,6 +177,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       <option value="restoration">Restoration</option>
       <option value="towing">Towing / Hauling</option>
       <option value="other">Other</option>
+    </select>
+    <div class="filter-label">// ZIP</div>
+    <input class="filter-input" type="text" id="zip-filter" inputmode="numeric" pattern="\d{5}" maxlength="5" value="97217" onchange="setZipFromInput(this.value)">
+    <select class="filter-radius" id="radius-filter" onchange="applyFilters()">
+      <option value="25">within 25 mi</option>
+      <option value="10">within 10 mi</option>
+      <option value="50">within 50 mi</option>
+      <option value="100">within 100 mi</option>
+      <option value="0">any distance</option>
     </select>
   </div>
   <div class="map-wrap">
@@ -678,12 +691,98 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   }
 
   window.filterByService = function(val) {
-    const filtered = val
-      ? allListingsData.filter(l => l.bizType?.toLowerCase().includes(val.toLowerCase()))
-      : allListingsData;
-    dropMarkers(filtered);
+    // Legacy entry point — route to combined filter.
+    document.getElementById('service-filter').value = val;
+    applyFilters();
+  };
+
+  // ── ZIP / RADIUS FILTERING ──
+  const DEFAULT_ZIP = '97217';
+  let currentZipLatLng = null;
+  let currentZip = DEFAULT_ZIP;
+
+  function distanceMiles(lat1, lng1, lat2, lng2) {
+    const R = 3958.8;
+    const toRad = d => d * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  window.applyFilters = function() {
+    const service = document.getElementById('service-filter').value;
+    const radius = parseFloat(document.getElementById('radius-filter').value) || 0;
+    let filtered = allListingsData;
+    if (service) {
+      filtered = filtered.filter(l => l.bizType?.toLowerCase().includes(service.toLowerCase()));
+    }
+    if (radius > 0 && currentZipLatLng) {
+      filtered = filtered.filter(l =>
+        l.lat && l.lng && distanceMiles(currentZipLatLng.lat, currentZipLatLng.lng, l.lat, l.lng) <= radius
+      );
+    }
+    if (map) dropMarkers(filtered);
     renderCards(filtered);
   };
+
+  window.setZipFromInput = function(raw) {
+    const zip = (raw || '').trim();
+    if (!/^\d{5}$/.test(zip)) {
+      document.getElementById('zip-filter').value = currentZip;
+      return;
+    }
+    geocodeZipAndApply(zip);
+  };
+
+  function geocodeZipAndApply(zip) {
+    if (!geocoder) { setTimeout(() => geocodeZipAndApply(zip), 200); return; }
+    geocoder.geocode({ address: zip + ', USA', componentRestrictions: { country: 'US', postalCode: zip } }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        const loc = results[0].geometry.location;
+        currentZip = zip;
+        currentZipLatLng = { lat: loc.lat(), lng: loc.lng() };
+        if (map) map.setCenter(currentZipLatLng);
+        applyFilters();
+      } else {
+        // Bad ZIP — revert input
+        document.getElementById('zip-filter').value = currentZip;
+      }
+    });
+  }
+
+  function detectUserZip() {
+    if (!navigator.geolocation) { geocodeZipAndApply(DEFAULT_ZIP); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => reverseGeocodeToZip(pos.coords.latitude, pos.coords.longitude),
+      () => geocodeZipAndApply(DEFAULT_ZIP),
+      { timeout: 6000, maximumAge: 600000 }
+    );
+  }
+
+  function reverseGeocodeToZip(lat, lng) {
+    if (!geocoder) { setTimeout(() => reverseGeocodeToZip(lat, lng), 200); return; }
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (status === 'OK' && results && results.length) {
+        for (const r of results) {
+          const comp = r.address_components?.find(c => c.types.includes('postal_code'));
+          if (comp && /^\d{5}$/.test(comp.short_name)) {
+            document.getElementById('zip-filter').value = comp.short_name;
+            geocodeZipAndApply(comp.short_name);
+            return;
+          }
+        }
+      }
+      geocodeZipAndApply(DEFAULT_ZIP);
+    });
+  }
+
+  // Run auto-detect after map (and geocoder) are ready
+  function waitForGeocoderThenDetect() {
+    if (geocoder) detectUserZip();
+    else setTimeout(waitForGeocoderThenDetect, 200);
+  }
+  waitForGeocoderThenDetect();
 
   renderApproved();
   loadFeatured();
