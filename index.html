@@ -145,7 +145,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.17.0 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.17.1 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -574,8 +574,24 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   const CURATED_TYPES = [
     'Auto Shop', 'Fabricator', 'Painter / Pinstriper', 'Welder', 'Photographer',
     'Upholstery', 'Parts / Salvage', 'Detailing', 'Machinist', 'Restoration',
-    'Towing / Hauling', 'Other'
+    'Towing / Hauling', 'Apparel', 'Other'
   ];
+  // Synonyms: typing one of these surfaces the matching curated type.
+  // Key must be the lowercase curated name. Values are lowercase alias substrings.
+  const SYNONYMS = {
+    'auto shop':           ['mechanic', 'repair', 'service', 'garage'],
+    'fabricator':          ['fab', 'fabrication', 'custom build', 'custom', 'metalwork', 'metal work'],
+    'painter / pinstriper':['paint', 'pinstripe', 'striping', 'flames', 'graphics', 'mural', 'spray', 'bodywork'],
+    'welder':              ['weld', 'welding', 'tig', 'mig'],
+    'photographer':        ['photo', 'pic', 'picture', 'shoot', 'camera'],
+    'upholstery':          ['upholster', 'interior', 'seat', 'stitch', 'leather'],
+    'parts / salvage':     ['part', 'salvage', 'junkyard', 'used parts', 'oem'],
+    'detailing':           ['detail', 'wash', 'wax', 'clean', 'polish', 'ceramic'],
+    'machinist':           ['machine', 'machining', 'lathe', 'mill', 'engine work'],
+    'restoration':         ['resto', 'restore', 'rebuild'],
+    'towing / hauling':    ['tow', 'haul', 'recovery', 'flatbed', 'transport'],
+    'apparel':             ['shirt', 'tee', 'tshirt', 't-shirt', 'hat', 'cap', 'hoodie', 'clothes', 'clothing', 'merch', 'gear']
+  };
   let allServiceTypes = [...CURATED_TYPES];
   function titleCase(s) {
     return s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).replace(/\s+\/\s+/g, ' / ');
@@ -601,9 +617,19 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   function renderSuggestions(query) {
     const panel = document.getElementById('suggest-panel');
     const q = (query || '').trim().toLowerCase();
-    const matches = q ? allServiceTypes.filter(t => t.toLowerCase().includes(q)) : allServiceTypes;
+    let matches;
+    if (!q) {
+      matches = allServiceTypes;
+    } else {
+      matches = allServiceTypes.filter(t => {
+        const tLower = t.toLowerCase();
+        if (tLower.includes(q)) return true;
+        const aliases = SYNONYMS[tLower] || [];
+        return aliases.some(a => a.includes(q));
+      });
+    }
     if (!matches.length) {
-      panel.innerHTML = '<div class="suggest-empty">No match — keep typing or press Enter</div>';
+      panel.innerHTML = '<div class="suggest-empty">No match. Keep typing or press Enter</div>';
     } else {
       panel.innerHTML = matches.map(t => `<div class="suggest-item" onmousedown="event.preventDefault();pickSuggestion('${t.replace(/'/g, "\\'")}')" ontouchstart="event.preventDefault();pickSuggestion('${t.replace(/'/g, "\\'")}')">${t}</div>`).join('');
     }
