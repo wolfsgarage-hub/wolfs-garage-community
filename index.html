@@ -39,10 +39,30 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .feat-bio{font-size:12px;line-height:1.5;color:rgba(245,241,232,0.75);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .feat-loc{font-size:11px;color:rgba(245,241,232,0.5);margin-top:8px;}
 .feat-empty{font-family:'Special Elite',monospace;font-size:11px;color:rgba(245,241,232,0.3);letter-spacing:1px;text-align:center;padding:40px 0;}
-.filter-bar{display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap;}
+.filter-bar{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;}
+.filter-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .filter-label{font-family:'Special Elite',monospace;font-size:12px;color:var(--copper);letter-spacing:2px;white-space:nowrap;}
-.filter-select{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;flex:1;min-width:220px;max-width:340px;}
+.filter-select{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;flex:1;min-width:200px;}
 .filter-select:focus{outline:none;border-color:var(--red);}
+.type-group{display:flex;align-items:center;gap:4px;flex:1;min-width:200px;}
+.type-wrap{flex:1;min-width:0;}
+.type-wrap .filter-select{width:100%;min-width:0;box-sizing:border-box;}
+.suggest-panel{display:none;background:var(--black);border:1px solid var(--red);border-top:none;max-height:280px;overflow-y:auto;margin-top:-1px;}
+.suggest-panel.open{display:block;}
+.suggest-item{padding:14px 14px;font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:1px;color:var(--bone);cursor:pointer;border-bottom:1px solid rgba(245,241,232,0.08);user-select:none;-webkit-tap-highlight-color:rgba(204,0,0,0.3);}
+.suggest-item:active{background:var(--red);}
+.suggest-item:last-child{border-bottom:none;}
+.suggest-empty{padding:14px;font-family:'Special Elite',monospace;font-size:11px;color:rgba(245,241,232,0.4);letter-spacing:1px;}
+.clear-btn{background:var(--black);border:1px solid var(--line);color:rgba(245,241,232,0.5);padding:8px 12px;font-size:18px;cursor:pointer;line-height:1;font-family:'Oswald',sans-serif;}
+.clear-btn:hover{border-color:var(--red);color:var(--bone);}
+.zip-group{display:inline-flex;align-items:center;gap:8px;flex-wrap:nowrap;}
+.filter-input{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 12px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;width:90px;text-align:center;}
+.filter-input:focus{outline:none;border-color:var(--red);}
+.filter-radius{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;flex:1;min-width:140px;}
+.filter-radius:focus{outline:none;border-color:var(--red);}
+.locate-btn{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:8px 12px;font-size:16px;cursor:pointer;line-height:1;}
+.locate-btn:hover{border-color:var(--red);}
+.locate-btn:active{background:var(--red);}
 .map-wrap{margin-bottom:32px;position:relative;overflow:hidden;height:300px;border:1px solid var(--line);}
 
 .map-overlay{position:absolute;inset:0;pointer-events:none;border:2px solid var(--red);}
@@ -122,9 +142,62 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .footer .container{font-family:'Special Elite',monospace;font-size:11px;color:rgba(245,241,232,0.4);letter-spacing:2px;text-align:center;}
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--red);color:var(--bone);font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;padding:12px 24px;z-index:999;transition:transform 0.3s;pointer-events:none;}
 .toast.show{transform:translateX(-50%) translateY(0);}
+.ver-stamp{position:fixed;top:8px;left:8px;background:var(--red);color:var(--bone);font-family:'Special Elite',monospace;font-size:12px;letter-spacing:2px;padding:4px 10px;z-index:9999;border:1px solid var(--bone);}
 </style>
 </head>
 <body>
+<div class="ver-stamp">BUILD v3.16.1</div>
+<div id="wgdiag" style="position:fixed;top:42px;left:8px;right:8px;background:#FFD700;color:#000;font-family:'Courier New',monospace;font-size:10px;padding:6px;z-index:9999;line-height:1.35;max-height:140px;overflow-y:auto;border:2px solid #000;white-space:pre-wrap;">DIAG: init...</div>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.16.1 zip-filter ' + new Date().toISOString());
+(function(){
+  var diag = document.getElementById('wgdiag');
+  function log(msg){
+    if(!diag) return;
+    var t = new Date().toISOString().slice(11,19);
+    diag.textContent = t + ' ' + msg + '\n' + diag.textContent;
+    if(diag.textContent.length > 1800) diag.textContent = diag.textContent.slice(0, 1800);
+  }
+  window.__wgLog = log;
+  window.addEventListener('error', function(e){
+    log('JS-ERROR: ' + (e.message || e) + ' @ ' + ((e.filename||'').split('/').pop()) + ':' + (e.lineno||'?'));
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    log('PROMISE-REJ: ' + (e.reason && (e.reason.message || e.reason) || 'unknown'));
+  });
+  function inspect(label){
+    log(label + ' handlers: openSuggestions=' + (typeof window.openSuggestions) + ' onServiceInput=' + (typeof window.onServiceInput) + ' clearService=' + (typeof window.clearService));
+  }
+  function init(){
+    inspect('early');
+    var inp = document.getElementById('service-filter');
+    var panel = document.getElementById('suggest-panel');
+    log('dom: input=' + !!inp + ' panel=' + !!panel);
+    if(inp){
+      inp.addEventListener('focus', function(){ log('EVT focus on input'); });
+      inp.addEventListener('input', function(){ log('EVT input fired value=' + JSON.stringify(inp.value)); });
+      inp.addEventListener('blur', function(){ log('EVT blur on input'); });
+      inp.addEventListener('touchstart', function(){ log('EVT touchstart on input'); }, {passive:true});
+    }
+    if(panel){
+      var obs = new MutationObserver(function(muts){
+        muts.forEach(function(m){
+          if(m.attributeName === 'class'){
+            log('PANEL class=[' + panel.className + '] display=' + getComputedStyle(panel).display + ' children=' + panel.children.length);
+          }
+        });
+      });
+      obs.observe(panel, { attributes: true });
+    }
+  }
+  if(document.readyState === 'loading'){
+    window.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  setTimeout(function(){ inspect('+2s'); }, 2000);
+  setTimeout(function(){ inspect('+5s'); }, 5000);
+})();
+</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -158,22 +231,30 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
   <!-- SERVICE FILTER + MAP -->
   <div class="filter-bar">
-    <div class="filter-label">// I'M LOOKING FOR...</div>
-    <select class="filter-select" id="service-filter" onchange="filterByService(this.value)">
-      <option value="">— ALL BUSINESSES —</option>
-      <option value="auto shop">Auto Shop</option>
-      <option value="fabricator">Fabricator</option>
-      <option value="painter">Painter / Pinstriper</option>
-      <option value="welder">Welder</option>
-      <option value="photographer">Photographer</option>
-      <option value="upholstery">Upholstery</option>
-      <option value="parts">Parts / Salvage</option>
-      <option value="detailing">Detailing</option>
-      <option value="machinist">Machinist</option>
-      <option value="restoration">Restoration</option>
-      <option value="towing">Towing / Hauling</option>
-      <option value="other">Other</option>
-    </select>
+    <div class="filter-row">
+      <div class="filter-label">// I'M LOOKING FOR...</div>
+      <div class="type-group">
+        <div class="type-wrap">
+          <input class="filter-select" type="text" id="service-filter" placeholder="Type or pick a business type..." autocomplete="off" oninput="onServiceInput()" onfocus="openSuggestions()" onblur="closeSuggestionsSoon()">
+        </div>
+        <button type="button" class="clear-btn" id="clear-service-btn" onclick="clearService()" title="Clear">×</button>
+      </div>
+    </div>
+    <div class="suggest-panel" id="suggest-panel" role="listbox"></div>
+    <div class="filter-row">
+      <div class="zip-group">
+        <span class="filter-label">// ZIP</span>
+        <input class="filter-input" type="text" id="zip-filter" inputmode="numeric" pattern="\d{5}" maxlength="5" value="97217" onchange="setZipFromInput(this.value)">
+        <button type="button" class="locate-btn" id="locate-btn" onclick="detectUserZip()" title="Use my location">📍</button>
+      </div>
+      <select class="filter-radius" id="radius-filter" onchange="applyFilters()">
+        <option value="25">within 25 mi</option>
+        <option value="10">within 10 mi</option>
+        <option value="50">within 50 mi</option>
+        <option value="100">within 100 mi</option>
+        <option value="0">any distance</option>
+      </select>
+    </div>
   </div>
   <div class="map-wrap">
     <div id="map" style="width:100%;height:100%;"></div>
@@ -376,7 +457,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     try {
       await createUserWithEmailAndPassword(auth, email, pw);
       window.closeAuthModal();
-      showToast('ACCOUNT CREATED — YOU'RE IN THE PACK');
+      showToast('ACCOUNT CREATED - YOU\'RE IN THE PACK');
     } catch(e) {
       const el = document.getElementById('auth-error');
       el.textContent = e.message;
@@ -531,13 +612,78 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     try {
       const snap = await getDocs(query(collection(db, 'listings'), where('status', '==', 'approved')));
       allListingsData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      refreshServiceTypes(allListingsData);
       renderCards(allListingsData);
       if (map) dropMarkers(allListingsData);
       else { const t = setInterval(() => { if(map){ dropMarkers(allListingsData); clearInterval(t); } }, 200); }
     } catch(e) {
-      grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="icon">⚠</div><div>COULDN'T LOAD.<br>CHECK CONNECTION.</div></div>';
+      grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="icon">⚠</div><div>COULDN\'T LOAD.<br>CHECK CONNECTION.</div></div>';
     }
   }
+
+  // ── CUSTOM TYPEAHEAD SUGGESTIONS ──
+  // Curated types are always offered. Dynamic types from listings are added on top.
+  const CURATED_TYPES = [
+    'Auto Shop', 'Fabricator', 'Painter / Pinstriper', 'Welder', 'Photographer',
+    'Upholstery', 'Parts / Salvage', 'Detailing', 'Machinist', 'Restoration',
+    'Towing / Hauling', 'Other'
+  ];
+  let allServiceTypes = [...CURATED_TYPES];
+  function titleCase(s) {
+    return s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).replace(/\s+\/\s+/g, ' / ');
+  }
+  function refreshServiceTypes(listings) {
+    const curatedKeys = new Set(CURATED_TYPES.map(t => t.toLowerCase()));
+    const extras = new Map();
+    listings.forEach(l => {
+      const raw = (l.bizType || '').trim();
+      if (!raw) return;
+      const key = raw.toLowerCase();
+      if (curatedKeys.has(key)) return;
+      if (!extras.has(key)) extras.set(key, titleCase(raw));
+    });
+    const dynamicTypes = Array.from(extras.values()).sort();
+    const curatedWithoutOther = CURATED_TYPES.filter(t => t !== 'Other');
+    allServiceTypes = [...curatedWithoutOther, ...dynamicTypes, 'Other'];
+    // If panel is currently open, refresh its contents
+    if (document.getElementById('suggest-panel').classList.contains('open')) {
+      renderSuggestions(document.getElementById('service-filter').value);
+    }
+  }
+  function renderSuggestions(query) {
+    const panel = document.getElementById('suggest-panel');
+    const q = (query || '').trim().toLowerCase();
+    const matches = q ? allServiceTypes.filter(t => t.toLowerCase().includes(q)) : allServiceTypes;
+    if (!matches.length) {
+      panel.innerHTML = '<div class="suggest-empty">No match — keep typing or press Enter</div>';
+    } else {
+      panel.innerHTML = matches.map(t => `<div class="suggest-item" onmousedown="event.preventDefault();pickSuggestion('${t.replace(/'/g, "\\'")}')" ontouchstart="event.preventDefault();pickSuggestion('${t.replace(/'/g, "\\'")}')">${t}</div>`).join('');
+    }
+    panel.classList.add('open');
+  }
+  window.onServiceInput = function() {
+    renderSuggestions(document.getElementById('service-filter').value);
+    applyFilters();
+  };
+  window.openSuggestions = function() {
+    renderSuggestions(document.getElementById('service-filter').value);
+  };
+  window.closeSuggestionsSoon = function() {
+    // Slight delay so a tap on a suggestion can register before blur closes the panel
+    setTimeout(() => {
+      document.getElementById('suggest-panel').classList.remove('open');
+    }, 200);
+  };
+  window.pickSuggestion = function(value) {
+    const input = document.getElementById('service-filter');
+    input.value = value;
+    document.getElementById('suggest-panel').classList.remove('open');
+    applyFilters();
+  };
+  window.clearService = function() {
+    const input = document.getElementById('service-filter');
+    if (input) { input.value = ''; document.getElementById('suggest-panel').classList.remove('open'); applyFilters(); }
+  };
 
   // ── SET MAIN PHOTO ──
   window.setMainPhoto = async (listingId, idx) => {
@@ -559,7 +705,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
   function esc(s) {
     if (!s) return '';
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'>'',"'":'&quot;',"'":'&#39;'}[c]));
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
 
@@ -590,8 +736,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         ${l.website ? `<div class="feat-loc"><a href="${esc(l.website)}" target="_blank" style="color:var(--copper);">↗ ${esc(l.website)}</a></div>` : `<div class="feat-loc">${esc(l.contact || '')}</div>`}
       `;
     } catch(e) {
-      panel.innerHTML = '<div class="feat-empty">COULDN'T LOAD</div>';
+      panel.innerHTML = '<div class="feat-empty">COULDN\'T LOAD</div>';
       console.error(e);
+      if (window.__wgLog) window.__wgLog('FEATURED-ERR: code=' + (e.code || 'n/a') + ' msg=' + (e.message || e));
     }
   }
 
@@ -600,6 +747,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   let placeLatLng = null;
 
   window.initMap = function() {
+    if (window.__wgLog) window.__wgLog('MAP: initMap() called');
     map = new google.maps.Map(document.getElementById('map'), {
       center: { lat: 45.5231, lng: -122.6750 },
       zoom: 11,
@@ -678,15 +826,136 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   }
 
   window.filterByService = function(val) {
-    const filtered = val
-      ? allListingsData.filter(l => l.bizType?.toLowerCase().includes(val.toLowerCase()))
-      : allListingsData;
-    dropMarkers(filtered);
+    // Legacy entry point — route to combined filter.
+    document.getElementById('service-filter').value = val;
+    applyFilters();
+  };
+
+  // ── ZIP / RADIUS FILTERING ──
+  const DEFAULT_ZIP = '97217';
+  let currentZipLatLng = null;
+  let currentZip = DEFAULT_ZIP;
+
+  function distanceMiles(lat1, lng1, lat2, lng2) {
+    const R = 3958.8;
+    const toRad = d => d * Math.PI / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  window.applyFilters = function() {
+    const service = document.getElementById('service-filter').value;
+    const radius = parseFloat(document.getElementById('radius-filter').value) || 0;
+    let filtered = allListingsData;
+    if (service) {
+      filtered = filtered.filter(l => l.bizType?.toLowerCase().includes(service.toLowerCase()));
+    }
+    if (radius > 0 && currentZipLatLng) {
+      filtered = filtered.filter(l =>
+        l.lat && l.lng && distanceMiles(currentZipLatLng.lat, currentZipLatLng.lng, l.lat, l.lng) <= radius
+      );
+    }
+    if (map) dropMarkers(filtered);
     renderCards(filtered);
   };
 
+  window.setZipFromInput = function(raw) {
+    const zip = (raw || '').trim();
+    if (!/^\d{5}$/.test(zip)) {
+      document.getElementById('zip-filter').value = currentZip;
+      return;
+    }
+    geocodeZipAndApply(zip);
+  };
+
+  function geocodeZipAndApply(zip) {
+    if (!geocoder) { setTimeout(() => geocodeZipAndApply(zip), 200); return; }
+    geocoder.geocode({ address: zip + ', USA', componentRestrictions: { country: 'US', postalCode: zip } }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        const loc = results[0].geometry.location;
+        currentZip = zip;
+        currentZipLatLng = { lat: loc.lat(), lng: loc.lng() };
+        if (map) map.setCenter(currentZipLatLng);
+        applyFilters();
+      } else {
+        // Bad ZIP — revert input
+        document.getElementById('zip-filter').value = currentZip;
+      }
+    });
+  }
+
+  window.detectUserZip = function() {
+    console.log('[ZIP] detectUserZip called');
+    const btn = document.getElementById('locate-btn');
+    if (btn) btn.textContent = '⏳';
+    if (!navigator.geolocation) {
+      console.warn('[ZIP] navigator.geolocation not available');
+      if (btn) btn.textContent = '📍';
+      geocodeZipAndApply(DEFAULT_ZIP);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        console.log('[ZIP] geolocation got coords:', pos.coords.latitude, pos.coords.longitude);
+        if (btn) btn.textContent = '📍';
+        reverseGeocodeToZip(pos.coords.latitude, pos.coords.longitude);
+      },
+      err => {
+        console.warn('[ZIP] geolocation error:', err.code, err.message);
+        if (btn) btn.textContent = '📍';
+        // Don't override the current ZIP if user already had something set
+        if (!currentZipLatLng) geocodeZipAndApply(DEFAULT_ZIP);
+      },
+      { timeout: 10000, maximumAge: 60000, enableHighAccuracy: false }
+    );
+  };
+
+  function reverseGeocodeToZip(lat, lng) {
+    if (!geocoder) { setTimeout(() => reverseGeocodeToZip(lat, lng), 200); return; }
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (status === 'OK' && results && results.length) {
+        for (const r of results) {
+          const comp = r.address_components?.find(c => c.types.includes('postal_code'));
+          if (comp && /^\d{5}$/.test(comp.short_name)) {
+            document.getElementById('zip-filter').value = comp.short_name;
+            geocodeZipAndApply(comp.short_name);
+            return;
+          }
+        }
+      }
+      geocodeZipAndApply(DEFAULT_ZIP);
+    });
+  }
+
+  // Auto-attempt geolocation on first load. If the browser prompt doesn't appear or the user
+  // denies/dismisses, the default ZIP stays as the active filter. User can manually tap the
+  // 📍 button next to the ZIP input to re-attempt after granting permission.
+  function waitForGeocoderThenDetect() {
+    if (geocoder) {
+      console.log('[ZIP] Geocoder ready, attempting auto-detect');
+      detectUserZip();
+    } else {
+      setTimeout(waitForGeocoderThenDetect, 200);
+    }
+  }
+  waitForGeocoderThenDetect();
+
   renderApproved();
   loadFeatured();
+
+  // Race guard: if Google Maps loaded before the module finished, the API's
+  // callback fired against a window.initMap that didn't exist yet. Detect this
+  // and call initMap manually now that it's attached.
+  if (typeof google !== 'undefined' && google.maps && !map) {
+    if (window.__wgLog) window.__wgLog('MAP: google ready at module-end, calling initMap manually (race)');
+    try { window.initMap(); } catch(e) {
+      if (window.__wgLog) window.__wgLog('MAP-ERR: initMap threw: ' + (e.message || e));
+    }
+  } else if (typeof google === 'undefined') {
+    if (window.__wgLog) window.__wgLog('MAP: google not yet loaded at module-end (waiting for async callback)');
+  }
 </script>
 </body>
 </html>
