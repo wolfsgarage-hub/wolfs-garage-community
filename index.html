@@ -146,9 +146,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<div class="ver-stamp">BUILD v3.16.0</div>
+<div class="ver-stamp">BUILD v3.16.1</div>
 <div id="wgdiag" style="position:fixed;top:42px;left:8px;right:8px;background:#FFD700;color:#000;font-family:'Courier New',monospace;font-size:10px;padding:6px;z-index:9999;line-height:1.35;max-height:140px;overflow-y:auto;border:2px solid #000;white-space:pre-wrap;">DIAG: init...</div>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.16.0 zip-filter ' + new Date().toISOString());
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.16.1 zip-filter ' + new Date().toISOString());
 (function(){
   var diag = document.getElementById('wgdiag');
   function log(msg){
@@ -157,6 +157,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     diag.textContent = t + ' ' + msg + '\n' + diag.textContent;
     if(diag.textContent.length > 1800) diag.textContent = diag.textContent.slice(0, 1800);
   }
+  window.__wgLog = log;
   window.addEventListener('error', function(e){
     log('JS-ERROR: ' + (e.message || e) + ' @ ' + ((e.filename||'').split('/').pop()) + ':' + (e.lineno||'?'));
   });
@@ -737,6 +738,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     } catch(e) {
       panel.innerHTML = '<div class="feat-empty">COULDN\'T LOAD</div>';
       console.error(e);
+      if (window.__wgLog) window.__wgLog('FEATURED-ERR: code=' + (e.code || 'n/a') + ' msg=' + (e.message || e));
     }
   }
 
@@ -745,6 +747,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   let placeLatLng = null;
 
   window.initMap = function() {
+    if (window.__wgLog) window.__wgLog('MAP: initMap() called');
     map = new google.maps.Map(document.getElementById('map'), {
       center: { lat: 45.5231, lng: -122.6750 },
       zoom: 11,
@@ -941,6 +944,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
   renderApproved();
   loadFeatured();
+
+  // Race guard: if Google Maps loaded before the module finished, the API's
+  // callback fired against a window.initMap that didn't exist yet. Detect this
+  // and call initMap manually now that it's attached.
+  if (typeof google !== 'undefined' && google.maps && !map) {
+    if (window.__wgLog) window.__wgLog('MAP: google ready at module-end, calling initMap manually (race)');
+    try { window.initMap(); } catch(e) {
+      if (window.__wgLog) window.__wgLog('MAP-ERR: initMap threw: ' + (e.message || e));
+    }
+  } else if (typeof google === 'undefined') {
+    if (window.__wgLog) window.__wgLog('MAP: google not yet loaded at module-end (waiting for async callback)');
+  }
 </script>
 </body>
 </html>
