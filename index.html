@@ -146,9 +146,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<div class="ver-stamp">BUILD v3.15.3</div>
+<div class="ver-stamp">BUILD v3.16.0</div>
 <div id="wgdiag" style="position:fixed;top:42px;left:8px;right:8px;background:#FFD700;color:#000;font-family:'Courier New',monospace;font-size:10px;padding:6px;z-index:9999;line-height:1.35;max-height:140px;overflow-y:auto;border:2px solid #000;white-space:pre-wrap;">DIAG: init...</div>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.15.3 zip-filter ' + new Date().toISOString());
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.16.0 zip-filter ' + new Date().toISOString());
 (function(){
   var diag = document.getElementById('wgdiag');
   function log(msg){
@@ -456,7 +456,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     try {
       await createUserWithEmailAndPassword(auth, email, pw);
       window.closeAuthModal();
-      showToast('ACCOUNT CREATED — YOU'RE IN THE PACK');
+      showToast('ACCOUNT CREATED - YOU\'RE IN THE PACK');
     } catch(e) {
       const el = document.getElementById('auth-error');
       el.textContent = e.message;
@@ -616,7 +616,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       if (map) dropMarkers(allListingsData);
       else { const t = setInterval(() => { if(map){ dropMarkers(allListingsData); clearInterval(t); } }, 200); }
     } catch(e) {
-      grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="icon">⚠</div><div>COULDN'T LOAD.<br>CHECK CONNECTION.</div></div>';
+      grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="icon">⚠</div><div>COULDN\'T LOAD.<br>CHECK CONNECTION.</div></div>';
     }
   }
 
@@ -704,7 +704,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
   function esc(s) {
     if (!s) return '';
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'>'',"'":'&quot;',"'":'&#39;'}[c]));
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
 
@@ -735,7 +735,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         ${l.website ? `<div class="feat-loc"><a href="${esc(l.website)}" target="_blank" style="color:var(--copper);">↗ ${esc(l.website)}</a></div>` : `<div class="feat-loc">${esc(l.contact || '')}</div>`}
       `;
     } catch(e) {
-      panel.innerHTML = '<div class="feat-empty">COULDN'T LOAD</div>';
+      panel.innerHTML = '<div class="feat-empty">COULDN\'T LOAD</div>';
       console.error(e);
     }
   }
