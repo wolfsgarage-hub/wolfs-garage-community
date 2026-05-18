@@ -146,8 +146,56 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<div class="ver-stamp">BUILD v3.15.1</div>
-<script>console.log('Wolf\u2019s Garage Directory — BUILD v3.15.1 — zip-filter — ' + new Date().toISOString());</script>
+<div class="ver-stamp">BUILD v3.15.2</div>
+<div id="wgdiag" style="position:fixed;top:42px;left:8px;right:8px;background:#FFD700;color:#000;font-family:'Courier New',monospace;font-size:10px;padding:6px;z-index:9999;line-height:1.35;max-height:140px;overflow-y:auto;border:2px solid #000;white-space:pre-wrap;">DIAG: init...</div>
+<script>console.log('Wolf\u2019s Garage Directory — BUILD v3.15.2 — zip-filter — ' + new Date().toISOString());
+(function(){
+  var diag = document.getElementById('wgdiag');
+  function log(msg){
+    if(!diag) return;
+    var t = new Date().toISOString().slice(11,19);
+    diag.textContent = t + ' ' + msg + '\n' + diag.textContent;
+    if(diag.textContent.length > 1800) diag.textContent = diag.textContent.slice(0, 1800);
+  }
+  window.addEventListener('error', function(e){
+    log('JS-ERROR: ' + (e.message || e) + ' @ ' + ((e.filename||'').split('/').pop()) + ':' + (e.lineno||'?'));
+  });
+  window.addEventListener('unhandledrejection', function(e){
+    log('PROMISE-REJ: ' + (e.reason && (e.reason.message || e.reason) || 'unknown'));
+  });
+  function inspect(label){
+    log(label + ' handlers: openSuggestions=' + (typeof window.openSuggestions) + ' onServiceInput=' + (typeof window.onServiceInput) + ' clearService=' + (typeof window.clearService));
+  }
+  function init(){
+    inspect('early');
+    var inp = document.getElementById('service-filter');
+    var panel = document.getElementById('suggest-panel');
+    log('dom: input=' + !!inp + ' panel=' + !!panel);
+    if(inp){
+      inp.addEventListener('focus', function(){ log('EVT focus on input'); });
+      inp.addEventListener('input', function(){ log('EVT input fired value=' + JSON.stringify(inp.value)); });
+      inp.addEventListener('blur', function(){ log('EVT blur on input'); });
+      inp.addEventListener('touchstart', function(){ log('EVT touchstart on input'); }, {passive:true});
+    }
+    if(panel){
+      var obs = new MutationObserver(function(muts){
+        muts.forEach(function(m){
+          if(m.attributeName === 'class'){
+            log('PANEL class=[' + panel.className + '] display=' + getComputedStyle(panel).display + ' children=' + panel.children.length);
+          }
+        });
+      });
+      obs.observe(panel, { attributes: true });
+    }
+  }
+  if(document.readyState === 'loading'){
+    window.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  setTimeout(function(){ inspect('+2s'); }, 2000);
+  setTimeout(function(){ inspect('+5s'); }, 5000);
+})();
 
 <!-- HEADER -->
 <div class="top-bar">
