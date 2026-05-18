@@ -142,9 +142,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .footer .container{font-family:'Special Elite',monospace;font-size:11px;color:rgba(245,241,232,0.4);letter-spacing:2px;text-align:center;}
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--red);color:var(--bone);font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;padding:12px 24px;z-index:999;transition:transform 0.3s;pointer-events:none;}
 .toast.show{transform:translateX(-50%) translateY(0);}
+.ver-stamp{position:fixed;top:8px;left:8px;background:var(--red);color:var(--bone);font-family:'Special Elite',monospace;font-size:12px;letter-spacing:2px;padding:4px 10px;z-index:9999;border:1px solid var(--bone);}
 </style>
 </head>
 <body>
+<div class="ver-stamp">BUILD v3.15.1</div>
+<script>console.log('Wolf\u2019s Garage Directory — BUILD v3.15.1 — zip-filter — ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
