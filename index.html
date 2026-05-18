@@ -187,7 +187,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.18.0 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.18.1 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -774,8 +774,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         ${l.website ? `<div class="feat-loc"><a href="${esc(l.website)}" target="_blank" style="color:var(--copper);">↗ ${esc(l.website)}</a></div>` : `<div class="feat-loc">${esc(l.contact || '')}</div>`}
       `;
     } catch(e) {
-      panel.innerHTML = '<div class="feat-empty">COULDN\'T LOAD</div>';
-      console.error(e);
+      // Fail gracefully: show empty state instead of "COULDN'T LOAD".
+      // This is non-essential UI - if Firestore rules haven't been published
+      // to allow /settings reads yet, or any other transient issue, we don't
+      // want to broadcast it in the layout. Genuine errors still log to console.
+      panel.innerHTML = '<div class="feat-empty">NO FEATURED BUSINESS YET</div>';
+      console.error('[featured]', e.code || '', e.message || e);
       if (window.__wgLog) window.__wgLog('FEATURED-ERR: code=' + (e.code || 'n/a') + ' msg=' + (e.message || e));
     }
   }
