@@ -142,10 +142,52 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .footer .container{font-family:'Special Elite',monospace;font-size:11px;color:rgba(245,241,232,0.4);letter-spacing:2px;text-align:center;}
 .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--red);color:var(--bone);font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;padding:12px 24px;z-index:999;transition:transform 0.3s;pointer-events:none;}
 .toast.show{transform:translateX(-50%) translateY(0);}
+
+/* Pack Roster - admin printable directory */
+.roster-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:600;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+.roster-bg.open{display:flex;}
+.roster-panel{background:var(--bone);color:#0A0A0A;width:100%;max-width:720px;padding:40px 36px;font-family:'Work Sans',sans-serif;position:relative;margin:20px 0;}
+.roster-controls{position:sticky;top:0;display:flex;gap:10px;justify-content:flex-end;background:var(--bone);padding:10px 0 14px;border-bottom:1px solid #999;margin-bottom:24px;z-index:2;}
+.roster-btn{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:10px 18px;border:1px solid #0A0A0A;background:#0A0A0A;color:var(--bone);cursor:pointer;}
+.roster-btn.outline{background:transparent;color:#0A0A0A;}
+.roster-btn:hover{opacity:.85;}
+.roster-head{text-align:center;margin-bottom:24px;}
+.roster-title{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:5px;color:#CC0000;line-height:1;margin-bottom:4px;}
+.roster-sub{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:3px;color:#444;}
+.roster-rule{height:2px;background:#CC0000;margin:18px auto 26px;width:60%;}
+.roster-section{margin-bottom:22px;}
+.roster-section-title{font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:3px;text-transform:uppercase;color:#CC0000;border-bottom:1px solid #CC0000;padding-bottom:4px;margin-bottom:12px;}
+.roster-listing{padding:10px 0;border-bottom:1px dotted #aaa;}
+.roster-listing:last-child{border-bottom:none;}
+.roster-biz-name{font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:1px;color:#0A0A0A;text-transform:uppercase;}
+.roster-meta{font-family:'Special Elite',monospace;font-size:11px;color:#555;letter-spacing:1px;margin-top:2px;}
+.roster-bio{font-family:'Work Sans',sans-serif;font-size:12px;line-height:1.45;color:#222;margin-top:6px;}
+.roster-contact{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#0A0A0A;margin-top:4px;text-transform:uppercase;}
+.roster-empty{font-family:'Special Elite',monospace;font-size:13px;color:#666;text-align:center;padding:40px 20px;letter-spacing:2px;}
+.roster-loading{font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:3px;text-align:center;padding:60px 20px;color:#555;}
+.roster-foot{text-align:center;font-family:'Special Elite',monospace;font-size:10px;letter-spacing:3px;color:#444;border-top:1px solid #999;padding-top:16px;margin-top:24px;}
+.roster-tabs{display:flex;border-bottom:1px solid #999;margin-bottom:20px;}
+.roster-tab{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;padding:8px 16px;background:transparent;color:#666;border:none;cursor:pointer;}
+.roster-tab.active{color:#0A0A0A;border-bottom:2px solid #CC0000;}
+.admin-print-btn{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:transparent;border:1px solid var(--red);color:var(--red);padding:6px 12px;cursor:pointer;margin-right:8px;}
+.admin-print-btn:hover{background:var(--red);color:var(--bone);}
+
+@media print {
+  body > *:not(.roster-bg) { display: none !important; }
+  .roster-bg { position: static !important; background: #fff !important; padding: 0 !important; display: block !important; overflow: visible !important; }
+  .roster-panel { max-width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; }
+  .roster-controls { display: none !important; }
+  .roster-tabs { display: none !important; }
+  .roster-section { page-break-inside: avoid; }
+  .roster-listing { page-break-inside: avoid; }
+  .roster-title { color: #000 !important; }
+  .roster-section-title { color: #000 !important; border-color: #000 !important; }
+  .roster-rule { background: #000 !important; }
+}
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.17.1 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.18.0 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -336,6 +378,22 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   </div>
 </div>
 
+<!-- PACK ROSTER (admin print export) -->
+<div class="roster-bg" id="roster-modal">
+  <div class="roster-panel">
+    <div class="roster-controls">
+      <button class="roster-btn outline" onclick="closePackRoster()">CLOSE</button>
+      <button class="roster-btn" onclick="downloadRosterCSV()">CSV</button>
+      <button class="roster-btn" onclick="triggerPrint()">PRINT</button>
+    </div>
+    <div class="roster-tabs" id="roster-tabs">
+      <button class="roster-tab active" id="tab-directory" onclick="switchRosterTab('directory')">DIRECTORY</button>
+      <button class="roster-tab" id="tab-pending" onclick="switchRosterTab('pending')">PENDING</button>
+    </div>
+    <div id="roster-body"><div class="roster-loading">LOADING THE PACK...</div></div>
+  </div>
+</div>
+
 <div class="footer">
   <div class="container">WOLF'S GARAGE LLC · PORTLAND, OREGON · GET BACK IN THE GARAGE</div>
 </div>
@@ -359,6 +417,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   const CLOUDINARY_CLOUD = "dancaaglf";
   const CLOUDINARY_PRESET = "wolfs-garage";
 
+  const ADMIN_EMAILS = ['wolfsgaragenw@gmail.com', 'illsupernova.ja@gmail.com'];
+  const isWGAdmin = () => currentUser && ADMIN_EMAILS.includes((currentUser.email || '').toLowerCase());
+
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
@@ -370,7 +431,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     currentUser = user;
     const area = document.getElementById('auth-area');
     if (user) {
-      area.innerHTML = `<span class="auth-user">${user.email.split('@')[0].toUpperCase()}</span> <button class="auth-btn" onclick="doSignOut()" style="margin-left:10px;">Sign Out</button>`;
+      const adminBtn = ADMIN_EMAILS.includes((user.email || '').toLowerCase())
+        ? '<button class="admin-print-btn" onclick="openPackRoster()">PACK ROSTER</button>'
+        : '';
+      area.innerHTML = `${adminBtn}<span class="auth-user">${user.email.split('@')[0].toUpperCase()}</span> <button class="auth-btn" onclick="doSignOut()" style="margin-left:10px;">Sign Out</button>`;
     } else {
       area.innerHTML = '<button class="auth-btn" id="auth-toggle-btn" onclick="openAuthModal()">Sign In</button>';
     }
@@ -715,6 +779,124 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       if (window.__wgLog) window.__wgLog('FEATURED-ERR: code=' + (e.code || 'n/a') + ' msg=' + (e.message || e));
     }
   }
+
+  // ── PACK ROSTER (admin print export) ──
+  let rosterCache = { directory: null, pending: null };
+  let rosterCurrentTab = 'directory';
+
+  window.openPackRoster = async () => {
+    if (!isWGAdmin()) return;
+    document.getElementById('roster-modal').classList.add('open');
+    rosterCurrentTab = 'directory';
+    document.getElementById('tab-directory').classList.add('active');
+    document.getElementById('tab-pending').classList.remove('active');
+    await loadRosterTab('directory');
+  };
+
+  window.closePackRoster = () => {
+    document.getElementById('roster-modal').classList.remove('open');
+  };
+
+  window.switchRosterTab = async (tab) => {
+    rosterCurrentTab = tab;
+    document.getElementById('tab-directory').classList.toggle('active', tab === 'directory');
+    document.getElementById('tab-pending').classList.toggle('active', tab === 'pending');
+    await loadRosterTab(tab);
+  };
+
+  window.triggerPrint = () => window.print();
+
+  async function loadRosterTab(tab) {
+    const body = document.getElementById('roster-body');
+    body.innerHTML = '<div class="roster-loading">LOADING...</div>';
+    try {
+      if (!rosterCache[tab]) {
+        const statusVal = tab === 'directory' ? 'approved' : 'pending';
+        const q = query(collection(db, 'listings'), where('status', '==', statusVal));
+        const snap = await getDocs(q);
+        rosterCache[tab] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      }
+      renderRoster(rosterCache[tab], tab);
+    } catch(e) {
+      body.innerHTML = '<div class="roster-empty">Failed to load. ' + esc(e.message || e) + '</div>';
+      console.error('Roster load error:', e);
+    }
+  }
+
+  function renderRoster(listings, tab) {
+    const body = document.getElementById('roster-body');
+    const title = tab === 'directory' ? 'THE PACK' : 'PENDING APPROVAL';
+    const sub = tab === 'directory' ? 'Wolf\'s Garage Hot Rodder Directory' : 'Awaiting Review';
+    if (!listings || !listings.length) {
+      body.innerHTML = `
+        <div class="roster-head">
+          <div class="roster-title">${title}</div>
+          <div class="roster-sub">${sub}</div>
+        </div>
+        <div class="roster-rule"></div>
+        <div class="roster-empty">${tab === 'directory' ? 'No approved listings yet.' : 'No pending listings.'}</div>
+        <div class="roster-foot">WOLF&apos;S GARAGE LLC &middot; PORTLAND, OREGON &middot; GET BACK IN THE GARAGE</div>
+      `;
+      return;
+    }
+    // Sort: bizType then bizName
+    const sorted = [...listings].sort((a, b) => {
+      const t = (a.bizType || 'zzz').localeCompare(b.bizType || 'zzz');
+      return t !== 0 ? t : (a.bizName || '').localeCompare(b.bizName || '');
+    });
+    // Group by bizType
+    const groups = {};
+    sorted.forEach(l => {
+      const t = l.bizType || 'Other';
+      if (!groups[t]) groups[t] = [];
+      groups[t].push(l);
+    });
+    let html = `
+      <div class="roster-head">
+        <div class="roster-title">${title}</div>
+        <div class="roster-sub">${sub} &middot; ${listings.length} ${listings.length === 1 ? 'business' : 'businesses'}</div>
+      </div>
+      <div class="roster-rule"></div>
+    `;
+    Object.keys(groups).sort().forEach(type => {
+      html += `<div class="roster-section"><div class="roster-section-title">${esc(type)}</div>`;
+      groups[type].forEach(l => {
+        const contact = l.contact || l.website || l.userEmail || '';
+        html += `<div class="roster-listing">
+          <div class="roster-biz-name">${esc(l.bizName || 'UNNAMED')}</div>
+          ${l.location ? `<div class="roster-meta">${esc(l.location)}</div>` : ''}
+          ${l.bio ? `<div class="roster-bio">${esc(l.bio)}</div>` : ''}
+          ${contact ? `<div class="roster-contact">${esc(contact)}</div>` : ''}
+        </div>`;
+      });
+      html += '</div>';
+    });
+    html += `<div class="roster-foot">WOLF&apos;S GARAGE LLC &middot; PORTLAND, OREGON &middot; GET BACK IN THE GARAGE</div>`;
+    body.innerHTML = html;
+  }
+
+  window.downloadRosterCSV = () => {
+    const listings = rosterCache[rosterCurrentTab];
+    if (!listings || !listings.length) { showToast('NOTHING TO EXPORT'); return; }
+    const cols = ['bizName', 'bizType', 'location', 'contact', 'website', 'bio', 'userEmail', 'status', 'id'];
+    const headerRow = cols.join(',');
+    const csvEscape = v => {
+      const s = String(v == null ? '' : v).replace(/"/g, '""');
+      return /[",\n]/.test(s) ? `"${s}"` : s;
+    };
+    const rows = listings.map(l => cols.map(c => csvEscape(l[c])).join(','));
+    const csv = [headerRow, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `wolfs-garage-${rosterCurrentTab}-${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('CSV DOWNLOADED');
+  };
 
   // ── GOOGLE MAPS ──
   let map, markers = [], allListingsData = [], geocoder;
