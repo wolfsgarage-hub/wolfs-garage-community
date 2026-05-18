@@ -187,7 +187,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.1 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.2 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -910,42 +910,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     if (window.__wgLog) window.__wgLog('MAP: initMap() called');
     map = new google.maps.Map(document.getElementById('map'), {
       center: { lat: 45.5231, lng: -122.6750 },
-      zoom: 11,
-      styles: [
-        // Wolf's Garage map theme - warm charcoal base, copper-toned roads,
-        // red highway accents, bone-white labels. Pinstripe-palette compliant.
-        { elementType: 'geometry', stylers: [{ color: '#0F0F0F' }] },
-        { elementType: 'labels.text.stroke', stylers: [{ color: '#0A0A0A' }, { weight: 3 }] },
-        { elementType: 'labels.text.fill', stylers: [{ color: '#C8922A' }] },
-
-        // Roads — copper/bone progression by road type
-        { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2B2218' }] },
-        { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1A1410' }] },
-        { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#F5F1E8' }] },
-        { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#3A2D1F' }] },
-        { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#5A3A1E' }] },
-        { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#CC0000' }, { weight: 0.6 }] },
-        { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#F5F1E8' }] },
-        { featureType: 'road.local', elementType: 'geometry', stylers: [{ color: '#1E1812' }] },
-
-        // Water — flat black with copper outline labels
-        { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#050505' }] },
-        { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#8E6F2F' }] },
-
-        // Landscape — slightly warmer than pure black
-        { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#1A1612' }] },
-        { featureType: 'landscape.natural', elementType: 'geometry', stylers: [{ color: '#1F1A14' }] },
-
-        // Hide noise — POIs, transit, business pins
-        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-        { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-
-        // Admin boundaries — subtle red pinstripe between regions
-        { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#CC0000' }, { weight: 0.4 }] },
-        { featureType: 'administrative.country', elementType: 'labels.text.fill', stylers: [{ color: '#C8922A' }] },
-        { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#F5F1E8' }] },
-        { featureType: 'administrative.neighborhood', elementType: 'labels.text.fill', stylers: [{ color: '#A88840' }] },
-      ]
+      zoom: 11
     });
     geocoder = new google.maps.Geocoder();
 
