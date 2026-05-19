@@ -261,7 +261,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.5 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.6 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -956,17 +956,17 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     grid.innerHTML = listings.map(l => {
       const isOwner = currentUser && currentUser.uid === l.userId;
       const canEdit = isOwner || isWGAdmin();
-      const photos = l.bizPhotos || [];
-      const mainIdx = l.mainPhotoIdx || 0;
+      const bizPhotos = l.bizPhotos || [];
+      const vehPhotos = l.vehPhotos || [];
+      const mainBizIdx = Math.min(l.mainPhotoIdx || 0, Math.max(0, bizPhotos.length - 1));
+      const mainVehIdx = Math.min(l.mainVehicleIdx || 0, Math.max(0, vehPhotos.length - 1));
+      const mainBizPhoto = bizPhotos[mainBizIdx];
+      const mainVehPhoto = vehPhotos[mainVehIdx];
       const needsPin = !l.lat || !l.lng;
       return `
         <div class="listing-card" onclick="openListingDetail('${l.id}')" style="cursor:pointer;">
           ${canEdit ? `<div style="position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:2;">${needsPin ? `<button class="profile-fix-loc-btn" style="padding:6px 12px;font-size:11px;" onclick="event.stopPropagation();fixListingLocation('${l.id}')">\u2316 FIX PIN</button>` : ''}<button class="edit-listing-btn" style="position:static;" onclick="event.stopPropagation();enterEditMode('${l.id}')">\u270E EDIT</button></div>` : ''}
-          ${photos.length ? `<div class="listing-photos">${photos.map((u,i) => `
-            <div style="position:relative;display:inline-block;">
-              <img src="${u}" onclick="event.stopPropagation();window.open('${u}','_blank')" class="${i===mainIdx?'main-photo':''}" title="${i===mainIdx?'Main photo':'Click to view'}">
-              ${isOwner ? `<button class="set-main-btn ${i===mainIdx?'active':''}" onclick="event.stopPropagation();setMainPhoto('${l.id}',${i})" title="Set as main">★</button>` : ''}
-            </div>`).join('')}</div>` : ''}
+          ${(mainBizPhoto || mainVehPhoto) ? `<div class="listing-photos">${mainBizPhoto ? `<div style="position:relative;display:inline-block;"><img src="${mainBizPhoto}" class="main-photo" title="Business preview"></div>` : ''}${mainVehPhoto ? `<div style="position:relative;display:inline-block;"><img src="${mainVehPhoto}" class="main-photo" title="Ride preview"></div>` : ''}</div>` : ''}
           <div class="biz-name">${esc(l.bizName)}</div>
           <div class="biz-type">${esc(l.bizType)}</div>
           <div class="biz-loc">${esc(l.location)}${l.website ? ' · <a href="'+esc(l.website)+'" target="_blank" style="color:var(--copper);text-decoration:underline;" onclick="event.stopPropagation()">site</a>' : ''}</div>
