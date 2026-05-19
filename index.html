@@ -177,6 +177,32 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .admin-print-btn:hover{background:var(--red);color:var(--bone);}
 .edit-listing-btn{position:absolute;top:10px;right:10px;background:var(--red);color:var(--bone);border:none;padding:6px 12px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;z-index:2;}
 .edit-listing-btn:hover{background:var(--red-dark);}
+
+/* MY PROFILE management view */
+.my-profile{display:none;border:1px solid var(--red);padding:24px;margin-bottom:32px;background:var(--gray-warm);position:relative;}
+.my-profile.visible{display:block;}
+.my-profile-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px;border-bottom:1px solid var(--red);padding-bottom:12px;}
+.my-profile-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--bone);line-height:1.1;}
+.my-profile-sub{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:2px;color:var(--copper);margin-top:2px;text-transform:uppercase;}
+.my-profile-section{margin-top:20px;}
+.my-profile-section-label{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;color:var(--copper);text-transform:uppercase;margin-bottom:10px;}
+.profile-thumbs{display:flex;gap:8px;flex-wrap:wrap;}
+.profile-thumb-wrap{position:relative;display:inline-block;}
+.profile-thumbs img{width:88px;height:88px;object-fit:cover;border:2px solid var(--line);cursor:pointer;display:block;}
+.profile-thumbs img.is-main{border-color:var(--red);}
+.profile-star{position:absolute;top:4px;right:4px;background:rgba(10,10,10,0.85);color:rgba(245,241,232,0.5);border:none;font-size:14px;width:24px;height:24px;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;justify-content:center;}
+.profile-star.active,.profile-star:hover{color:var(--copper);}
+.profile-empty{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:1px;color:rgba(245,241,232,0.4);padding:12px 0;}
+.profile-actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;}
+.profile-edit-btn{background:var(--red);color:var(--bone);border:none;padding:10px 18px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;}
+.profile-edit-btn:hover{background:var(--red-dark);}
+.profile-view-all-btn{background:transparent;border:1px solid var(--bone);color:var(--bone);padding:10px 18px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;}
+.profile-view-all-btn:hover{background:var(--bone);color:var(--black);}
+
+/* Suggestion list - distinguish names from types */
+.suggest-item.is-name{font-style:italic;color:var(--copper);}
+.suggest-item.is-name:active{color:var(--bone);}
+.suggest-item .biz-name-label{font-family:'Special Elite',monospace;font-size:9px;letter-spacing:2px;color:rgba(200,146,42,0.5);margin-left:6px;text-transform:uppercase;font-style:normal;}
 .edit-banner{background:var(--red);color:var(--bone);padding:10px 14px;margin-bottom:18px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;gap:12px;}
 .edit-banner .cancel-edit{background:transparent;border:1px solid var(--bone);color:var(--bone);padding:6px 12px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
 .edit-banner .cancel-edit:hover{background:var(--bone);color:var(--red);}
@@ -197,7 +223,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.20.0 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.0 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -260,6 +286,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div id="map" style="width:100%;height:100%;"></div>
     <div class="map-label" id="map-label">// PINS DROP AS THE PACK GROWS</div>
   </div>
+
+  <div class="my-profile" id="my-profile"></div>
 
   <div class="listing-grid" id="approved-listings">
     <div class="loading"><span class="spinner"></span>LOADING THE PACK...</div>
@@ -458,6 +486,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     } else {
       area.innerHTML = '<button class="auth-btn" id="auth-toggle-btn" onclick="openAuthModal()">Sign In</button>';
     }
+    // Re-render the listings + view mode whenever auth changes (sign in shows MY PROFILE; sign out hides it)
+    if (typeof renderCards === 'function' && Array.isArray(allListingsData)) {
+      renderCards(allListingsData);
+    }
+    if (typeof updateViewMode === 'function') updateViewMode();
   });
 
   // ── AUTH MODAL ──
@@ -788,6 +821,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       renderCards(allListingsData);
       if (map) dropMarkers(allListingsData);
       else { const t = setInterval(() => { if(map){ dropMarkers(allListingsData); clearInterval(t); } }, 200); }
+      // After data is loaded, decide which view to show (MY PROFILE vs grid)
+      if (typeof updateViewMode === 'function') updateViewMode();
     } catch(e) {
       grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="icon">⚠</div><div>COULDN\'T LOAD.<br>CHECK CONNECTION.</div></div>';
     }
@@ -817,6 +852,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     'apparel':             ['shirt', 'tee', 'tshirt', 't-shirt', 'hat', 'cap', 'hoodie', 'clothes', 'clothing', 'merch', 'gear']
   };
   let allServiceTypes = [...CURATED_TYPES];
+  let allListingNames = []; // [{name, type}] for richer suggestion display
   function titleCase(s) {
     return s.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()).replace(/\s+\/\s+/g, ' / ');
   }
@@ -833,6 +869,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     const dynamicTypes = Array.from(extras.values()).sort();
     const curatedWithoutOther = CURATED_TYPES.filter(t => t !== 'Other');
     allServiceTypes = [...curatedWithoutOther, ...dynamicTypes, 'Other'];
+    // Business names from approved listings (sorted alphabetically)
+    allListingNames = listings
+      .filter(l => l.bizName)
+      .map(l => ({ name: l.bizName, type: l.bizType || '' }))
+      .sort((a, b) => a.name.localeCompare(b.name));
     // If panel is currently open, refresh its contents
     if (document.getElementById('suggest-panel').classList.contains('open')) {
       renderSuggestions(document.getElementById('service-filter').value);
@@ -862,23 +903,38 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   function renderSuggestions(query) {
     const panel = document.getElementById('suggest-panel');
     const q = (query || '').trim().toLowerCase();
-    let matches;
+    // Filter types
+    let typeMatches;
     if (!q) {
-      matches = allServiceTypes;
+      typeMatches = allServiceTypes;
     } else {
-      matches = allServiceTypes.filter(t => {
+      typeMatches = allServiceTypes.filter(t => {
         const tLower = t.toLowerCase();
         if (tLower.includes(q)) return true;
         const aliases = SYNONYMS[tLower] || [];
         return aliases.some(a => a.includes(q));
       });
     }
-    if (!matches.length) {
+    // Filter names — substring on bizName
+    const nameMatches = (allListingNames || []).filter(n =>
+      !q || n.name.toLowerCase().includes(q)
+    );
+    if (!typeMatches.length && !nameMatches.length) {
       panel.innerHTML = '<div class="suggest-empty">No match. Keep typing or press Enter</div>';
     } else {
-      panel.innerHTML = matches.map(t => `<div class="suggest-item" onmousedown="event.preventDefault();pickSuggestion('${t.replace(/'/g, "\\'")}')" ontouchstart="event.preventDefault();pickSuggestion('${t.replace(/'/g, "\\'")}')">${t}</div>`).join('');
+      const typeHtml = typeMatches.map(t => {
+        const safe = t.replace(/'/g, "\\'");
+        return `<div class="suggest-item" onmousedown="event.preventDefault();pickSuggestion('${safe}')" ontouchstart="event.preventDefault();pickSuggestion('${safe}')">${esc(t)}</div>`;
+      }).join('');
+      const nameHtml = nameMatches.map(n => {
+        const safe = n.name.replace(/'/g, "\\'");
+        return `<div class="suggest-item is-name" onmousedown="event.preventDefault();pickSuggestion('${safe}')" ontouchstart="event.preventDefault();pickSuggestion('${safe}')">${esc(n.name)}<span class="biz-name-label">BUSINESS</span></div>`;
+      }).join('');
+      panel.innerHTML = typeHtml + nameHtml;
     }
     positionPanel();
+    // Auto-scroll panel back to top so first match is in view as the user types
+    panel.scrollTop = 0;
     panel.classList.add('open');
   }
   // Re-position on viewport resize (keyboard show/hide rotates this on Android Chrome)
@@ -891,6 +947,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   window.onServiceInput = function() {
     renderSuggestions(document.getElementById('service-filter').value);
     applyFilters();
+    if (typeof updateViewMode === 'function') updateViewMode();
   };
   window.openSuggestions = function() {
     renderSuggestions(document.getElementById('service-filter').value);
@@ -906,10 +963,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     input.value = value;
     document.getElementById('suggest-panel').classList.remove('open');
     applyFilters();
+    if (typeof updateViewMode === 'function') updateViewMode();
   };
   window.clearService = function() {
     const input = document.getElementById('service-filter');
-    if (input) { input.value = ''; document.getElementById('suggest-panel').classList.remove('open'); applyFilters(); }
+    if (input) {
+      input.value = '';
+      document.getElementById('suggest-panel').classList.remove('open');
+      applyFilters();
+      if (typeof updateViewMode === 'function') updateViewMode();
+    }
   };
 
   // ── SET MAIN PHOTO ──
@@ -920,9 +983,98 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       const i = allListingsData.findIndex(l => l.id === listingId);
       if (i > -1) allListingsData[i].mainPhotoIdx = idx;
       renderCards(allListingsData);
-      showToast('MAIN PHOTO UPDATED');
+      renderMyProfile();
+      showToast('MAIN BUSINESS PHOTO UPDATED');
     } catch(e) { showToast('ERROR'); }
   };
+
+  // ── SET MAIN VEHICLE/RIDE PHOTO ──
+  window.setMainVehiclePhoto = async (listingId, idx) => {
+    try {
+      const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
+      await updateDoc(doc(db, 'listings', listingId), { mainVehicleIdx: idx });
+      const i = allListingsData.findIndex(l => l.id === listingId);
+      if (i > -1) allListingsData[i].mainVehicleIdx = idx;
+      renderMyProfile();
+      showToast('MAIN RIDE PHOTO UPDATED');
+    } catch(e) { showToast('ERROR'); }
+  };
+
+  // ── MY PROFILE VIEW ──
+  function getMyListings() {
+    if (!currentUser) return [];
+    return (allListingsData || []).filter(l => l.userId === currentUser.uid);
+  }
+
+  function renderMyProfile() {
+    const wrap = document.getElementById('my-profile');
+    if (!wrap) return;
+    const mine = getMyListings();
+    if (!mine.length) {
+      wrap.innerHTML = '';
+      return;
+    }
+    wrap.innerHTML = mine.map(l => {
+      const bizPhotos = l.bizPhotos || [];
+      const vehPhotos = l.vehPhotos || [];
+      const mainBizIdx = l.mainPhotoIdx || 0;
+      const mainVehIdx = l.mainVehicleIdx || 0;
+      const bizHtml = bizPhotos.length
+        ? bizPhotos.map((u,i) => `
+            <div class="profile-thumb-wrap">
+              <img src="${esc(u)}" class="${i===mainBizIdx?'is-main':''}" onclick="window.open('${esc(u)}','_blank')" alt="Business photo">
+              <button class="profile-star ${i===mainBizIdx?'active':''}" onclick="setMainPhoto('${l.id}',${i})" title="Set as main business photo">\u2605</button>
+            </div>`).join('')
+        : '<div class="profile-empty">No business photos yet. Tap EDIT to add some.</div>';
+      const vehHtml = vehPhotos.length
+        ? vehPhotos.map((u,i) => `
+            <div class="profile-thumb-wrap">
+              <img src="${esc(u)}" class="${i===mainVehIdx?'is-main':''}" onclick="window.open('${esc(u)}','_blank')" alt="Ride photo">
+              <button class="profile-star ${i===mainVehIdx?'active':''}" onclick="setMainVehiclePhoto('${l.id}',${i})" title="Set as main ride photo">\u2605</button>
+            </div>`).join('')
+        : '<div class="profile-empty">No ride photos yet. Tap EDIT to add some.</div>';
+      return `
+        <div class="my-profile-head">
+          <div>
+            <div class="my-profile-title">// MY PROFILE \u2014 ${esc(l.bizName)}</div>
+            <div class="my-profile-sub">${esc(l.bizType || '')}${l.location ? ' \u00B7 ' + esc(l.location) : ''}</div>
+          </div>
+        </div>
+        <div class="my-profile-section">
+          <div class="my-profile-section-label">Business photos \u2014 tap \u2605 to set main</div>
+          <div class="profile-thumbs">${bizHtml}</div>
+        </div>
+        <div class="my-profile-section">
+          <div class="my-profile-section-label">Ride photos \u2014 tap \u2605 to set main</div>
+          <div class="profile-thumbs">${vehHtml}</div>
+        </div>
+        <div class="profile-actions">
+          <button class="profile-edit-btn" onclick="enterEditMode('${l.id}')">\u270E EDIT LISTING</button>
+          <button class="profile-view-all-btn" onclick="document.getElementById('service-filter').focus();">BROWSE THE PACK</button>
+        </div>`;
+    }).join('<hr style="border:none;border-top:1px dotted rgba(204,0,0,0.3);margin:24px 0;">');
+  }
+
+  // ── VIEW MODE: MY PROFILE vs PUBLIC GRID ──
+  // Rule: when signed in AND filter blank AND user owns >=1 listing → show MY PROFILE, hide grid.
+  // When user types in filter, or no ownership, or signed out → show grid.
+  function updateViewMode() {
+    const profileEl = document.getElementById('my-profile');
+    const gridEl = document.getElementById('approved-listings');
+    if (!profileEl || !gridEl) return;
+    const filterVal = (document.getElementById('service-filter')?.value || '').trim();
+    const mine = getMyListings();
+    const showProfile = currentUser && mine.length > 0 && filterVal === '';
+    if (showProfile) {
+      renderMyProfile();
+      profileEl.classList.add('visible');
+      gridEl.style.display = 'none';
+    } else {
+      profileEl.classList.remove('visible');
+      gridEl.style.display = '';
+    }
+  }
+  window.updateViewMode = updateViewMode;
 
   function showToast(msg) {
     const t = document.getElementById('toast');
@@ -1185,7 +1337,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     const radius = parseFloat(document.getElementById('radius-filter').value) || 0;
     let filtered = allListingsData;
     if (service) {
-      filtered = filtered.filter(l => l.bizType?.toLowerCase().includes(service.toLowerCase()));
+      const q = service.toLowerCase();
+      filtered = filtered.filter(l =>
+        (l.bizType || '').toLowerCase().includes(q) ||
+        (l.bizName || '').toLowerCase().includes(q)
+      );
     }
     if (radius > 0 && currentZipLatLng) {
       filtered = filtered.filter(l =>
