@@ -184,20 +184,30 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .my-profile-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px;border-bottom:1px solid var(--red);padding-bottom:12px;}
 .my-profile-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--bone);line-height:1.1;}
 .my-profile-sub{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:2px;color:var(--copper);margin-top:2px;text-transform:uppercase;}
-.my-profile-section{margin-top:20px;}
-.my-profile-section-label{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;color:var(--copper);text-transform:uppercase;margin-bottom:10px;}
-.profile-thumbs{display:flex;gap:8px;flex-wrap:wrap;}
-.profile-thumb-wrap{position:relative;display:inline-block;}
-.profile-thumbs img{width:88px;height:88px;object-fit:cover;border:2px solid var(--line);cursor:pointer;display:block;}
-.profile-thumbs img.is-main{border-color:var(--red);}
-.profile-star{position:absolute;top:4px;right:4px;background:rgba(10,10,10,0.85);color:rgba(245,241,232,0.5);border:none;font-size:14px;width:24px;height:24px;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;justify-content:center;}
-.profile-star.active,.profile-star:hover{color:var(--copper);}
-.profile-empty{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:1px;color:rgba(245,241,232,0.4);padding:12px 0;}
+.preview-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px;}
+@media (max-width:540px){ .preview-row{grid-template-columns:1fr;} }
+.preview-slot{position:relative;background:var(--black);border:1px solid var(--line);padding:10px;}
+.preview-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:var(--copper);text-transform:uppercase;margin-bottom:8px;}
+.preview-img-wrap{position:relative;width:100%;aspect-ratio:1/1;background:#1a1a1a;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.preview-img-wrap img{width:100%;height:100%;object-fit:cover;cursor:pointer;display:block;}
+.preview-empty{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:1px;color:rgba(245,241,232,0.4);text-align:center;padding:20px;line-height:1.5;}
+.preview-controls{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:var(--bone);}
+.preview-arrow{background:transparent;border:1px solid var(--bone);color:var(--bone);width:32px;height:32px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-family:'Oswald',sans-serif;}
+.preview-arrow:hover{background:var(--bone);color:var(--black);}
+.preview-arrow:disabled{opacity:0.3;cursor:not-allowed;}
+.preview-arrow:disabled:hover{background:transparent;color:var(--bone);}
+.preview-count{font-family:'Special Elite',monospace;font-size:10px;letter-spacing:2px;color:var(--copper);}
+.profile-empty-state{font-family:'Special Elite',monospace;font-size:12px;letter-spacing:1px;color:rgba(245,241,232,0.5);text-align:center;padding:20px;line-height:1.6;}
 .profile-actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;}
 .profile-edit-btn{background:var(--red);color:var(--bone);border:none;padding:10px 18px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;}
 .profile-edit-btn:hover{background:var(--red-dark);}
 .profile-view-all-btn{background:transparent;border:1px solid var(--bone);color:var(--bone);padding:10px 18px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;}
 .profile-view-all-btn:hover{background:var(--bone);color:var(--black);}
+.profile-fix-loc-btn{background:transparent;border:1px solid var(--copper);color:var(--copper);padding:10px 18px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;}
+.profile-fix-loc-btn:hover{color:var(--bone);border-color:var(--bone);}
+.location-status{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:1px;margin-top:12px;padding:8px 12px;}
+.location-status.ok{color:var(--bone);border-left:3px solid var(--bone);}
+.location-status.pending{color:var(--copper);border-left:3px solid var(--copper);}
 
 /* Suggestion list - distinguish names from types */
 .suggest-item.is-name{font-style:italic;color:var(--copper);}
@@ -223,7 +233,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.0 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.1 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -328,6 +338,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <div class="form-row">
               <label class="form-label">Address (for map pin)</label>
               <input class="form-input" id="address-input" name="address" placeholder="Start typing for autocomplete...">
+              <div class="form-hint">Type the street address. Maps share URLs (maps.app.goo.gl/...) can\u2019t be read by browsers.</div>
             </div>
             <div class="form-row">
               <label class="form-label">Contact / Email <span class="req">*</span></label>
@@ -701,17 +712,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         editingListingData.address !== f.address.value.trim()
       );
       const needsGeocode = !isEditing || locationChanged;
-      if (!finalCoords && needsGeocode && f.location.value.trim() && geocoder) {
+      if (!finalCoords && needsGeocode && f.location.value.trim()) {
         btn.textContent = 'LOCATING...';
-        finalCoords = await new Promise(resolve => {
-          const q = f.bizName.value.trim() + ', ' + f.location.value.trim();
-          geocoder.geocode({ address: q }, (results, status) => {
-            if (status === 'OK' && results[0]) {
-              const loc = results[0].geometry.location;
-              resolve({ lat: loc.lat(), lng: loc.lng() });
-            } else { resolve(null); }
-          });
-        });
+        finalCoords = await smartGeocode(
+          f.bizName.value.trim(),
+          f.location.value.trim(),
+          f.address.value.trim()
+        );
         btn.textContent = 'SAVING...';
       }
       if (isEditing) {
@@ -1017,22 +1024,30 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     wrap.innerHTML = mine.map(l => {
       const bizPhotos = l.bizPhotos || [];
       const vehPhotos = l.vehPhotos || [];
-      const mainBizIdx = l.mainPhotoIdx || 0;
-      const mainVehIdx = l.mainVehicleIdx || 0;
-      const bizHtml = bizPhotos.length
-        ? bizPhotos.map((u,i) => `
-            <div class="profile-thumb-wrap">
-              <img src="${esc(u)}" class="${i===mainBizIdx?'is-main':''}" onclick="window.open('${esc(u)}','_blank')" alt="Business photo">
-              <button class="profile-star ${i===mainBizIdx?'active':''}" onclick="setMainPhoto('${l.id}',${i})" title="Set as main business photo">\u2605</button>
-            </div>`).join('')
-        : '<div class="profile-empty">No business photos yet. Tap EDIT to add some.</div>';
-      const vehHtml = vehPhotos.length
-        ? vehPhotos.map((u,i) => `
-            <div class="profile-thumb-wrap">
-              <img src="${esc(u)}" class="${i===mainVehIdx?'is-main':''}" onclick="window.open('${esc(u)}','_blank')" alt="Ride photo">
-              <button class="profile-star ${i===mainVehIdx?'active':''}" onclick="setMainVehiclePhoto('${l.id}',${i})" title="Set as main ride photo">\u2605</button>
-            </div>`).join('')
-        : '<div class="profile-empty">No ride photos yet. Tap EDIT to add some.</div>';
+      const mainBizIdx = Math.min(l.mainPhotoIdx || 0, Math.max(0, bizPhotos.length - 1));
+      const mainVehIdx = Math.min(l.mainVehicleIdx || 0, Math.max(0, vehPhotos.length - 1));
+      const bizMainUrl = bizPhotos[mainBizIdx] || null;
+      const vehMainUrl = vehPhotos[mainVehIdx] || null;
+      const hasLocation = l.lat && l.lng;
+      const locationStatus = hasLocation
+        ? `<div class="location-status ok">\u2713 Map pin live at: ${esc(l.location || l.address || 'set coordinates')}</div>`
+        : `<div class="location-status pending">\u26A0 No map pin yet. Tap FIX LOCATION below or EDIT to enter a typed address (Google Maps share URLs can\u2019t be read by the browser).</div>`;
+      const bizPreview = bizMainUrl
+        ? `<div class="preview-img-wrap"><img src="${esc(bizMainUrl)}" onclick="window.open('${esc(bizMainUrl)}','_blank')" alt="Main business photo"></div>
+           <div class="preview-controls">
+             <button class="preview-arrow" onclick="cycleMain('${l.id}','biz',-1)" ${bizPhotos.length<=1?'disabled':''} title="Previous photo">\u2039</button>
+             <span class="preview-count">${mainBizIdx + 1} / ${bizPhotos.length}</span>
+             <button class="preview-arrow" onclick="cycleMain('${l.id}','biz',1)" ${bizPhotos.length<=1?'disabled':''} title="Next photo">\u203A</button>
+           </div>`
+        : `<div class="preview-img-wrap"><div class="preview-empty">No business photos.<br>Tap EDIT to upload.</div></div>`;
+      const vehPreview = vehMainUrl
+        ? `<div class="preview-img-wrap"><img src="${esc(vehMainUrl)}" onclick="window.open('${esc(vehMainUrl)}','_blank')" alt="Main ride photo"></div>
+           <div class="preview-controls">
+             <button class="preview-arrow" onclick="cycleMain('${l.id}','veh',-1)" ${vehPhotos.length<=1?'disabled':''} title="Previous photo">\u2039</button>
+             <span class="preview-count">${mainVehIdx + 1} / ${vehPhotos.length}</span>
+             <button class="preview-arrow" onclick="cycleMain('${l.id}','veh',1)" ${vehPhotos.length<=1?'disabled':''} title="Next photo">\u203A</button>
+           </div>`
+        : `<div class="preview-img-wrap"><div class="preview-empty">No ride photos.<br>Tap EDIT to upload.</div></div>`;
       return `
         <div class="my-profile-head">
           <div>
@@ -1040,20 +1055,92 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             <div class="my-profile-sub">${esc(l.bizType || '')}${l.location ? ' \u00B7 ' + esc(l.location) : ''}</div>
           </div>
         </div>
-        <div class="my-profile-section">
-          <div class="my-profile-section-label">Business photos \u2014 tap \u2605 to set main</div>
-          <div class="profile-thumbs">${bizHtml}</div>
+        <div class="preview-row">
+          <div class="preview-slot">
+            <div class="preview-label">Business preview \u2014 use \u2039 \u203A to swap main</div>
+            ${bizPreview}
+          </div>
+          <div class="preview-slot">
+            <div class="preview-label">Ride preview \u2014 use \u2039 \u203A to swap main</div>
+            ${vehPreview}
+          </div>
         </div>
-        <div class="my-profile-section">
-          <div class="my-profile-section-label">Ride photos \u2014 tap \u2605 to set main</div>
-          <div class="profile-thumbs">${vehHtml}</div>
-        </div>
+        ${locationStatus}
         <div class="profile-actions">
           <button class="profile-edit-btn" onclick="enterEditMode('${l.id}')">\u270E EDIT LISTING</button>
+          ${!hasLocation ? `<button class="profile-fix-loc-btn" onclick="fixListingLocation('${l.id}')">\u2316 FIX LOCATION</button>` : ''}
           <button class="profile-view-all-btn" onclick="document.getElementById('service-filter').focus();">BROWSE THE PACK</button>
         </div>`;
     }).join('<hr style="border:none;border-top:1px dotted rgba(204,0,0,0.3);margin:24px 0;">');
   }
+
+  // Cycle which photo is main, given a direction (-1 or 1)
+  window.cycleMain = async (listingId, kind, dir) => {
+    const i = (allListingsData || []).findIndex(l => l.id === listingId);
+    if (i < 0) return;
+    const l = allListingsData[i];
+    const photos = kind === 'biz' ? (l.bizPhotos || []) : (l.vehPhotos || []);
+    if (!photos.length) return;
+    const currentIdx = kind === 'biz' ? (l.mainPhotoIdx || 0) : (l.mainVehicleIdx || 0);
+    // Wrap around the array
+    const newIdx = ((currentIdx + dir) % photos.length + photos.length) % photos.length;
+    if (kind === 'biz') {
+      await setMainPhoto(listingId, newIdx);
+    } else {
+      await setMainVehiclePhoto(listingId, newIdx);
+    }
+  };
+
+  // Smart geocoding: tries multiple strategies, strips URLs, falls back to broader queries
+  async function smartGeocode(bizName, location, address) {
+    if (!geocoder) return null;
+    // Strip any URLs from address - geocoder can't read maps.app.goo.gl/... etc
+    const cleanAddress = (address || '').replace(/https?:\/\/\S+/g, '').trim();
+    const queries = [];
+    if (cleanAddress) {
+      queries.push(cleanAddress);
+      if (location) queries.push(cleanAddress + ', ' + location);
+    }
+    if (bizName && location) queries.push(bizName + ', ' + location);
+    if (location) queries.push(location);
+    for (const q of queries) {
+      const r = await new Promise(resolve => {
+        geocoder.geocode({ address: q }, (results, status) => {
+          if (status === 'OK' && results[0]) {
+            const loc = results[0].geometry.location;
+            resolve({ lat: loc.lat(), lng: loc.lng() });
+          } else { resolve(null); }
+        });
+      });
+      if (r) return r;
+    }
+    return null;
+  }
+
+  // FIX LOCATION button handler - re-runs geocode against existing listing data
+  window.fixListingLocation = async (listingId) => {
+    const i = (allListingsData || []).findIndex(l => l.id === listingId);
+    if (i < 0) return;
+    const l = allListingsData[i];
+    showToast('LOCATING...');
+    const coords = await smartGeocode(l.bizName, l.location, l.address);
+    if (!coords) {
+      showToast('STILL NO MATCH - TRY EDIT AND ENTER A FULL ADDRESS');
+      return;
+    }
+    try {
+      const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
+      await updateDoc(doc(db, 'listings', listingId), { lat: coords.lat, lng: coords.lng });
+      allListingsData[i].lat = coords.lat;
+      allListingsData[i].lng = coords.lng;
+      renderMyProfile();
+      if (map) dropMarkers(allListingsData);
+      showToast('MAP PIN SET');
+    } catch(e) {
+      console.error(e);
+      showToast('SAVE FAILED');
+    }
+  };
 
   // ── VIEW MODE: MY PROFILE vs PUBLIC GRID ──
   // Rule: when signed in AND filter blank AND user owns >=1 listing → show MY PROFILE, hide grid.
