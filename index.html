@@ -47,7 +47,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .type-group{display:flex;align-items:center;gap:4px;flex:1;min-width:200px;}
 .type-wrap{flex:1;min-width:0;position:relative;}
 .type-wrap .filter-select{width:100%;min-width:0;box-sizing:border-box;}
-.suggest-panel{display:none;position:absolute;top:100%;left:0;right:0;z-index:9999;background:var(--black);border:1px solid var(--red);border-top:none;max-height:280px;overflow-y:auto;margin-top:0;box-shadow:0 8px 24px rgba(0,0,0,0.6);}
+.suggest-panel{display:none;position:absolute;top:100%;left:0;right:0;z-index:9999;background:var(--black);border:1px solid var(--red);border-top:none;max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;margin-top:0;box-shadow:0 8px 24px rgba(0,0,0,0.6);}
 .suggest-panel.open{display:block;}
 .suggest-panel.flip-above{top:auto;bottom:100%;border-top:1px solid var(--red);border-bottom:none;box-shadow:0 -8px 24px rgba(0,0,0,0.6);}
 .suggest-item{padding:14px 14px;font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:1px;color:var(--bone);cursor:pointer;border-bottom:1px solid rgba(245,241,232,0.08);user-select:none;-webkit-tap-highlight-color:rgba(204,0,0,0.3);}
@@ -189,7 +189,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.6 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.7 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -707,12 +707,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     const viewportHeight = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
     const spaceBelow = viewportHeight - inputRect.bottom;
     const spaceAbove = inputRect.top;
-    // Need ~160px below input to fit at least 4 items; flip above if cramped AND there's more room up
-    if (spaceBelow < 160 && spaceAbove > spaceBelow) {
+    // Flip above if space below is cramped AND there's more room up
+    const shouldFlip = spaceBelow < 160 && spaceAbove > spaceBelow;
+    if (shouldFlip) {
       panel.classList.add('flip-above');
     } else {
       panel.classList.remove('flip-above');
     }
+    // Cap panel height to actual available space (minus 16px margin) so all items are reachable.
+    // Never exceed 280px; never go below 120px (always show at least 2 items).
+    const available = shouldFlip ? spaceAbove : spaceBelow;
+    const maxH = Math.max(120, Math.min(280, available - 16));
+    panel.style.maxHeight = maxH + 'px';
   }
   function renderSuggestions(query) {
     const panel = document.getElementById('suggest-panel');
