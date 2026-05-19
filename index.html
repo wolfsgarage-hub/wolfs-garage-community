@@ -73,6 +73,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .biz-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--bone);margin-bottom:3px;}
 .biz-type{font-family:'Special Elite',monospace;font-size:11px;color:var(--copper);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
 .biz-loc{color:rgba(245,241,232,0.6);font-size:13px;margin-bottom:12px;}
+.loc-pending{display:inline-block;font-family:'Special Elite',monospace;font-size:10px;letter-spacing:2px;color:var(--copper);border:1px solid var(--copper);padding:3px 8px;margin-bottom:12px;}
 .biz-bio{font-size:13px;line-height:1.6;color:rgba(245,241,232,0.8);margin-bottom:10px;}
 .biz-rides{font-family:'Special Elite',monospace;font-size:11px;color:var(--copper);}
 .listing-photos{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
@@ -187,7 +188,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.4 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.5 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -560,6 +561,21 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       const bizPhotos = await uploadToCloudinary(bizFiles, document.getElementById('biz-progress'));
       const vehPhotos = await uploadToCloudinary(vehFiles, document.getElementById('veh-progress'));
       btn.textContent = 'SAVING...';
+      // Fallback geocode: if Places Autocomplete didn't fire, try geocoding bizName + location
+      let finalCoords = placeLatLng;
+      if (!finalCoords && f.location.value.trim() && geocoder) {
+        btn.textContent = 'LOCATING...';
+        finalCoords = await new Promise(resolve => {
+          const q = f.bizName.value.trim() + ', ' + f.location.value.trim();
+          geocoder.geocode({ address: q }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+              const loc = results[0].geometry.location;
+              resolve({ lat: loc.lat(), lng: loc.lng() });
+            } else { resolve(null); }
+          });
+        });
+        btn.textContent = 'SAVING...';
+      }
       await addDoc(collection(db, 'listings'), {
         bizName: f.bizName.value.trim(), bizType: f.bizType.value.trim(),
         location: f.location.value.trim(), address: f.address.value.trim(),
@@ -569,7 +585,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         sideWork: f.sideWork.value.trim(), communityOffer: f.communityOffer.value.trim(),
         rides: f.rides.value.trim(),
         bizPhotos, vehPhotos,
-        lat: placeLatLng?.lat || null, lng: placeLatLng?.lng || null,
+        lat: finalCoords?.lat || null, lng: finalCoords?.lng || null,
         userId: currentUser.uid, userEmail: currentUser.email,
         status: 'pending', submittedAt: new Date().toISOString()
       });
@@ -615,6 +631,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
           <div class="biz-name">${esc(l.bizName)}</div>
           <div class="biz-type">${esc(l.bizType)}</div>
           <div class="biz-loc">${esc(l.location)}${l.website ? ' · <a href="'+esc(l.website)+'" target="_blank" style="color:var(--copper);text-decoration:underline;">site</a>' : ''}</div>
+          ${(!l.lat || !l.lng) ? '<div class="loc-pending">\u26A0 LOCATION PENDING</div>' : ''}
           <div class="biz-bio">${esc(l.bio)}</div>
           ${l.rides ? `<div class="biz-rides">RIDES: ${esc(l.rides)}</div>` : ''}
         </div>`;
@@ -1003,7 +1020,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     }
     if (radius > 0 && currentZipLatLng) {
       filtered = filtered.filter(l =>
-        l.lat && l.lng && distanceMiles(currentZipLatLng.lat, currentZipLatLng.lng, l.lat, l.lng) <= radius
+        !l.lat || !l.lng || distanceMiles(currentZipLatLng.lat, currentZipLatLng.lng, l.lat, l.lng) <= radius
       );
     }
     if (map) dropMarkers(filtered);
