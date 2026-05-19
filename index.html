@@ -69,7 +69,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .map-overlay{position:absolute;inset:0;pointer-events:none;border:2px solid var(--red);}
 .map-label{position:absolute;top:12px;left:12px;background:rgba(10,10,10,0.85);font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;color:var(--copper);padding:6px 12px;border:1px solid var(--line);}
 .listing-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
-.listing-card{background:var(--gray-warm);border:1px solid var(--line);padding:24px;transition:all 0.2s;}
+.listing-card{background:var(--gray-warm);border:1px solid var(--line);padding:24px;transition:all 0.2s;position:relative;}
 .listing-card:hover{border-color:var(--red);transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--copper);}
 .biz-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;color:var(--bone);margin-bottom:3px;}
 .biz-type{font-family:'Special Elite',monospace;font-size:11px;color:var(--copper);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
@@ -175,6 +175,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .roster-tab.active{color:#0A0A0A;border-bottom:2px solid #CC0000;}
 .admin-print-btn{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:transparent;border:1px solid var(--red);color:var(--red);padding:6px 12px;cursor:pointer;margin-right:8px;}
 .admin-print-btn:hover{background:var(--red);color:var(--bone);}
+.edit-listing-btn{position:absolute;top:10px;right:10px;background:var(--red);color:var(--bone);border:none;padding:6px 12px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;z-index:2;}
+.edit-listing-btn:hover{background:var(--red-dark);}
+.edit-banner{background:var(--red);color:var(--bone);padding:10px 14px;margin-bottom:18px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+.edit-banner .cancel-edit{background:transparent;border:1px solid var(--bone);color:var(--bone);padding:6px 12px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
+.edit-banner .cancel-edit:hover{background:var(--bone);color:var(--red);}
+.photo-edit-note{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:1px;color:var(--copper);margin-bottom:8px;line-height:1.5;}
 
 @media print {
   body > *:not(.roster-bg) { display: none !important; }
@@ -191,7 +197,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.8 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.20.0 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -265,9 +271,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   </div>
 
   <div class="form-wrap" id="form-wrap">
+    <div class="edit-banner" id="edit-banner" style="display:none;">
+      <span id="edit-banner-text">EDITING YOUR LISTING</span>
+      <button type="button" class="cancel-edit" onclick="cancelEdit()">CANCEL</button>
+    </div>
     <div class="form-head">
-      <h2>GET LISTED</h2>
-      <p>Free to list. Wolf reviews before it goes live. Make it good — people are gonna read this.</p>
+      <h2 id="form-head-title">GET LISTED</h2>
+      <p id="form-head-sub">Free to list. Wolf reviews before it goes live. Make it good — people are gonna read this.</p>
     </div>
     <div class="form-card" style="position:relative;">
       <form id="signup-form">
@@ -410,7 +420,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-  import { getFirestore, collection, addDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+  import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
   const firebaseConfig = {
@@ -433,6 +443,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   const auth = getAuth(app);
 
   let currentUser = null;
+  let editingListingId = null;
+  let editingListingData = null;
 
   // ── AUTH STATE ──
   onAuthStateChanged(auth, user => {
@@ -518,9 +530,68 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   // ── HANDLE ADD BIZ BUTTON ──
   window.handleAddBiz = () => {
     if (!currentUser) { openAuthModal(); return; }
+    // If we were in edit mode, exit it first
+    if (editingListingId) cancelEdit();
     const wrap = document.getElementById('form-wrap');
     wrap.classList.add('open');
     setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  };
+
+  // ── ENTER EDIT MODE ──
+  window.enterEditMode = (listingId) => {
+    if (!currentUser) { openAuthModal(); return; }
+    const listing = (allListingsData || []).find(l => l.id === listingId);
+    if (!listing) { showToast('LISTING NOT FOUND'); return; }
+    // Security: owner or admin only (UI check; rules enforce server-side)
+    const isOwner = currentUser.uid === listing.userId;
+    if (!isOwner && !isWGAdmin()) { showToast('NOT YOUR LISTING'); return; }
+    editingListingId = listingId;
+    editingListingData = listing;
+    // Pre-fill the form
+    const f = document.getElementById('signup-form');
+    f.bizName.value = listing.bizName || '';
+    f.bizType.value = listing.bizType || '';
+    f.location.value = listing.location || '';
+    f.address.value = listing.address || '';
+    f.contact.value = listing.contact || '';
+    f.website.value = listing.website || '';
+    f.specialties.value = listing.specialties || '';
+    f.ownerName.value = listing.ownerName || '';
+    f.bio.value = listing.bio || '';
+    f.sideWork.value = listing.sideWork || '';
+    f.communityOffer.value = listing.communityOffer || '';
+    f.rides.value = listing.rides || '';
+    // UI updates
+    document.getElementById('edit-banner').style.display = 'flex';
+    document.getElementById('edit-banner-text').textContent = `EDITING: ${listing.bizName}`;
+    document.getElementById('form-head-title').textContent = 'EDIT YOUR LISTING';
+    document.getElementById('form-head-sub').textContent = 'Update your info. Adding photos appends to your existing ones. Use the \u2605 on your card to set the main photo.';
+    document.getElementById('submit-btn').textContent = 'Save Changes';
+    // Clear new-photo thumbs (these are for NEW uploads only)
+    document.getElementById('biz-thumbs').innerHTML = '';
+    document.getElementById('veh-thumbs').innerHTML = '';
+    document.getElementById('biz-photos').value = '';
+    document.getElementById('veh-photos').value = '';
+    // Open and scroll
+    const wrap = document.getElementById('form-wrap');
+    wrap.classList.add('open');
+    setTimeout(() => wrap.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  };
+
+  // ── CANCEL EDIT ──
+  window.cancelEdit = () => {
+    editingListingId = null;
+    editingListingData = null;
+    document.getElementById('signup-form').reset();
+    document.getElementById('biz-thumbs').innerHTML = '';
+    document.getElementById('veh-thumbs').innerHTML = '';
+    document.getElementById('edit-banner').style.display = 'none';
+    document.getElementById('form-head-title').textContent = 'GET LISTED';
+    document.getElementById('form-head-sub').textContent = 'Free to list. Wolf reviews before it goes live. Make it good — people are gonna read this.';
+    document.getElementById('submit-btn').textContent = 'Submit for Review';
+    document.getElementById('form-wrap').classList.remove('open');
+    placeLatLng = null;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // ── GOOGLE PLACES AUTOCOMPLETE ──
@@ -581,17 +652,23 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     if (!currentUser) { openAuthModal(); return; }
     const f = e.target;
     const btn = document.getElementById('submit-btn');
+    const isEditing = !!editingListingId;
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>UPLOADING PHOTOS...';
     try {
       const bizFiles = Array.from(document.getElementById('biz-photos').files);
       const vehFiles = Array.from(document.getElementById('veh-photos').files);
-      const bizPhotos = await uploadToCloudinary(bizFiles, document.getElementById('biz-progress'));
-      const vehPhotos = await uploadToCloudinary(vehFiles, document.getElementById('veh-progress'));
+      const newBizPhotos = await uploadToCloudinary(bizFiles, document.getElementById('biz-progress'));
+      const newVehPhotos = await uploadToCloudinary(vehFiles, document.getElementById('veh-progress'));
       btn.textContent = 'SAVING...';
-      // Fallback geocode: if Places Autocomplete didn't fire, try geocoding bizName + location
+      // Geocode: edit mode re-geocodes only if location/address changed; create mode always tries
       let finalCoords = placeLatLng;
-      if (!finalCoords && f.location.value.trim() && geocoder) {
+      const locationChanged = isEditing && (
+        editingListingData.location !== f.location.value.trim() ||
+        editingListingData.address !== f.address.value.trim()
+      );
+      const needsGeocode = !isEditing || locationChanged;
+      if (!finalCoords && needsGeocode && f.location.value.trim() && geocoder) {
         btn.textContent = 'LOCATING...';
         finalCoords = await new Promise(resolve => {
           const q = f.bizName.value.trim() + ', ' + f.location.value.trim();
@@ -604,32 +681,65 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         });
         btn.textContent = 'SAVING...';
       }
-      await addDoc(collection(db, 'listings'), {
-        bizName: f.bizName.value.trim(), bizType: f.bizType.value.trim(),
-        location: f.location.value.trim(), address: f.address.value.trim(),
-        contact: f.contact.value.trim(), website: f.website.value.trim(),
-        specialties: f.specialties.value.trim(),
-        ownerName: f.ownerName.value.trim(), bio: f.bio.value.trim(),
-        sideWork: f.sideWork.value.trim(), communityOffer: f.communityOffer.value.trim(),
-        rides: f.rides.value.trim(),
-        bizPhotos, vehPhotos,
-        lat: finalCoords?.lat || null, lng: finalCoords?.lng || null,
-        userId: currentUser.uid, userEmail: currentUser.email,
-        status: 'pending', submittedAt: new Date().toISOString()
-      });
-      placeLatLng = null;
-      f.reset();
-      document.getElementById('biz-thumbs').innerHTML = '';
-      document.getElementById('veh-thumbs').innerHTML = '';
-      document.getElementById('form-wrap').classList.remove('open');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      showToast('SUBMITTED — WOLF WILL REVIEW SHORTLY');
+      if (isEditing) {
+        // Append new photos to existing
+        const mergedBizPhotos = [...(editingListingData.bizPhotos || []), ...newBizPhotos];
+        const mergedVehPhotos = [...(editingListingData.vehPhotos || []), ...newVehPhotos];
+        const updatePayload = {
+          bizName: f.bizName.value.trim(), bizType: f.bizType.value.trim(),
+          location: f.location.value.trim(), address: f.address.value.trim(),
+          contact: f.contact.value.trim(), website: f.website.value.trim(),
+          specialties: f.specialties.value.trim(),
+          ownerName: f.ownerName.value.trim(), bio: f.bio.value.trim(),
+          sideWork: f.sideWork.value.trim(), communityOffer: f.communityOffer.value.trim(),
+          rides: f.rides.value.trim(),
+          bizPhotos: mergedBizPhotos, vehPhotos: mergedVehPhotos,
+          updatedAt: new Date().toISOString(),
+          updatedBy: currentUser.email
+        };
+        // Only update coords if we successfully re-geocoded; otherwise leave existing
+        if (needsGeocode && finalCoords) {
+          updatePayload.lat = finalCoords.lat;
+          updatePayload.lng = finalCoords.lng;
+        }
+        await updateDoc(doc(db, 'listings', editingListingId), updatePayload);
+        const savedId = editingListingId;
+        cancelEdit();
+        showToast('CHANGES SAVED');
+        // Refresh listings so the card shows new data
+        renderApproved();
+      } else {
+        await addDoc(collection(db, 'listings'), {
+          bizName: f.bizName.value.trim(), bizType: f.bizType.value.trim(),
+          location: f.location.value.trim(), address: f.address.value.trim(),
+          contact: f.contact.value.trim(), website: f.website.value.trim(),
+          specialties: f.specialties.value.trim(),
+          ownerName: f.ownerName.value.trim(), bio: f.bio.value.trim(),
+          sideWork: f.sideWork.value.trim(), communityOffer: f.communityOffer.value.trim(),
+          rides: f.rides.value.trim(),
+          bizPhotos: newBizPhotos, vehPhotos: newVehPhotos,
+          lat: finalCoords?.lat || null, lng: finalCoords?.lng || null,
+          userId: currentUser.uid, userEmail: currentUser.email,
+          status: 'pending', submittedAt: new Date().toISOString()
+        });
+        placeLatLng = null;
+        f.reset();
+        document.getElementById('biz-thumbs').innerHTML = '';
+        document.getElementById('veh-thumbs').innerHTML = '';
+        document.getElementById('form-wrap').classList.remove('open');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast('SUBMITTED \u2014 WOLF WILL REVIEW SHORTLY');
+      }
     } catch(err) {
-      showToast('ERROR — TRY AGAIN');
       console.error(err);
+      if (err && (err.code === 'permission-denied' || /permission/i.test(err.message || ''))) {
+        showToast('PERMISSION DENIED \u2014 CHECK YOU OWN THIS LISTING');
+      } else {
+        showToast('ERROR \u2014 TRY AGAIN');
+      }
     }
     btn.disabled = false;
-    btn.textContent = 'Submit for Review';
+    btn.textContent = isEditing ? 'Save Changes' : 'Submit for Review';
   });
 
   window.clearForm = () => {
@@ -647,10 +757,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     }
     grid.innerHTML = listings.map(l => {
       const isOwner = currentUser && currentUser.uid === l.userId;
+      const canEdit = isOwner || isWGAdmin();
       const photos = l.bizPhotos || [];
       const mainIdx = l.mainPhotoIdx || 0;
       return `
         <div class="listing-card">
+          ${canEdit ? `<button class="edit-listing-btn" onclick="enterEditMode('${l.id}')">✎ EDIT</button>` : ''}
           ${photos.length ? `<div class="listing-photos">${photos.map((u,i) => `
             <div style="position:relative;display:inline-block;">
               <img src="${u}" onclick="window.open('${u}','_blank')" class="${i===mainIdx?'main-photo':''}" title="${i===mainIdx?'Main photo':'Click to view'}">
