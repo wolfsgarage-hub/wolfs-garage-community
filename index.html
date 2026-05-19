@@ -100,6 +100,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .modal-input:focus{outline:none;border-color:var(--red);}
 .modal-btn{width:100%;background:var(--red);color:var(--bone);border:none;padding:14px;font-family:'Oswald',sans-serif;font-size:14px;font-weight:700;letter-spacing:3px;cursor:pointer;}
 .modal-btn:hover{background:var(--red-dark);}
+.forgot-link{width:100%;background:transparent;border:none;padding:12px 0 4px;margin-top:6px;font-family:'Special Elite',monospace;font-size:11px;letter-spacing:2px;color:var(--copper);cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+.forgot-link:hover{color:var(--bone);}
 .modal-error{color:var(--red);font-size:13px;font-family:'Special Elite',monospace;margin-top:10px;display:none;}
 .modal-close{position:absolute;top:12px;right:16px;background:transparent;border:none;color:rgba(245,241,232,0.4);font-size:20px;cursor:pointer;}
 /* FORM */
@@ -189,7 +191,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.7 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.8 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -370,6 +372,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <input class="modal-input" id="signin-email" name="email" type="email" placeholder="Email" autocomplete="username" required>
         <input class="modal-input" id="signin-pw" name="password" type="password" placeholder="Password" autocomplete="current-password" required>
         <button class="modal-btn" type="submit">SIGN IN</button>
+        <button type="button" class="forgot-link" onclick="doPasswordReset()">FORGOT PASSWORD?</button>
       </form>
     </div>
     <div id="auth-create" style="display:none;">
@@ -408,7 +411,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
   import { getFirestore, collection, addDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyAGcEHgch3ofFWFDUlYphyaXAxqk06DAQ0",
@@ -464,6 +467,29 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     } catch(e) {
       const el = document.getElementById('auth-error');
       el.textContent = e.code === 'auth/invalid-credential' ? 'Wrong email or password.' : e.message;
+      el.style.color = 'var(--red)';
+      el.style.display = 'block';
+    }
+  };
+
+  window.doPasswordReset = async () => {
+    const email = document.getElementById('signin-email').value.trim();
+    const el = document.getElementById('auth-error');
+    if (!email) {
+      el.textContent = 'Enter your email above first, then tap Forgot Password.';
+      el.style.color = 'var(--copper)';
+      el.style.display = 'block';
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      el.textContent = 'Reset link sent. Check your inbox (and spam folder).';
+      el.style.color = 'var(--copper)';
+      el.style.display = 'block';
+    } catch(e) {
+      // For security, Firebase returns the same response for unknown emails. Show a neutral message.
+      el.textContent = 'If that email is registered, a reset link is on the way. Check your inbox and spam folder.';
+      el.style.color = 'var(--copper)';
       el.style.display = 'block';
     }
   };
@@ -478,6 +504,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     } catch(e) {
       const el = document.getElementById('auth-error');
       el.textContent = e.message;
+      el.style.color = 'var(--red)';
       el.style.display = 'block';
     }
   };
