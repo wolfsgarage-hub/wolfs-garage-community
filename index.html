@@ -233,7 +233,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.1 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.2 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -800,9 +800,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       const canEdit = isOwner || isWGAdmin();
       const photos = l.bizPhotos || [];
       const mainIdx = l.mainPhotoIdx || 0;
+      const needsPin = !l.lat || !l.lng;
       return `
         <div class="listing-card">
-          ${canEdit ? `<button class="edit-listing-btn" onclick="enterEditMode('${l.id}')">✎ EDIT</button>` : ''}
+          ${canEdit ? `<div style="position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:2;">${needsPin ? `<button class="profile-fix-loc-btn" style="padding:6px 12px;font-size:11px;" onclick="fixListingLocation('${l.id}')">\u2316 FIX PIN</button>` : ''}<button class="edit-listing-btn" style="position:static;" onclick="enterEditMode('${l.id}')">\u270E EDIT</button></div>` : ''}
           ${photos.length ? `<div class="listing-photos">${photos.map((u,i) => `
             <div style="position:relative;display:inline-block;">
               <img src="${u}" onclick="window.open('${u}','_blank')" class="${i===mainIdx?'main-photo':''}" title="${i===mainIdx?'Main photo':'Click to view'}">
@@ -811,7 +812,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
           <div class="biz-name">${esc(l.bizName)}</div>
           <div class="biz-type">${esc(l.bizType)}</div>
           <div class="biz-loc">${esc(l.location)}${l.website ? ' · <a href="'+esc(l.website)+'" target="_blank" style="color:var(--copper);text-decoration:underline;">site</a>' : ''}</div>
-          ${(!l.lat || !l.lng) ? '<div class="loc-pending">\u26A0 LOCATION PENDING</div>' : ''}
+          ${needsPin ? '<div class="loc-pending">\u26A0 LOCATION PENDING</div>' : ''}
           <div class="biz-bio">${esc(l.bio)}</div>
           ${l.rides ? `<div class="biz-rides">RIDES: ${esc(l.rides)}</div>` : ''}
         </div>`;
@@ -1134,6 +1135,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       allListingsData[i].lat = coords.lat;
       allListingsData[i].lng = coords.lng;
       renderMyProfile();
+      renderCards(allListingsData);
       if (map) dropMarkers(allListingsData);
       showToast('MAP PIN SET');
     } catch(e) {
