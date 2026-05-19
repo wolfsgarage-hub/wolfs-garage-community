@@ -205,6 +205,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .profile-view-all-btn:hover{background:var(--bone);color:var(--black);}
 .profile-fix-loc-btn{background:transparent;border:1px solid var(--copper);color:var(--copper);padding:10px 18px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;}
 .profile-fix-loc-btn:hover{color:var(--bone);border-color:var(--bone);}
+/* Existing-photo thumbnails inside the edit form */
+.existing-thumbs{display:none;gap:8px;flex-wrap:wrap;margin:8px 0 12px;}
+.existing-thumbs.visible{display:flex;}
+.existing-thumb-wrap{position:relative;width:72px;height:72px;}
+.existing-thumb-wrap img{width:100%;height:100%;object-fit:cover;border:2px solid var(--line);display:block;}
+.existing-thumb-remove{position:absolute;top:-6px;right:-6px;background:var(--red);color:var(--bone);border:2px solid var(--black);width:22px;height:22px;border-radius:50%;font-size:14px;cursor:pointer;line-height:1;padding:0;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;font-weight:bold;}
+.existing-thumb-remove:hover{background:var(--red-dark);}
+.existing-thumbs-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--copper);text-transform:uppercase;margin-bottom:4px;width:100%;}
 .location-status{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:1px;margin-top:12px;padding:8px 12px;}
 .location-status.ok{color:var(--bone);border-left:3px solid var(--bone);}
 .location-status.pending{color:var(--copper);border-left:3px solid var(--copper);}
@@ -233,7 +241,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.2 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.3 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -354,6 +362,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             </div>
             <div class="form-row">
               <label class="form-label">Business Photos</label>
+              <div class="existing-thumbs" id="biz-existing"></div>
               <div class="photo-zone" id="biz-zone">
                 <input type="file" id="biz-photos" accept="image/*" multiple>
                 <div class="photo-zone-label">📷 Tap to open gallery</div>
@@ -388,6 +397,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
             </div>
             <div class="form-row">
               <label class="form-label">Vehicle Photos</label>
+              <div class="existing-thumbs" id="veh-existing"></div>
               <div class="photo-zone" id="veh-zone">
                 <input type="file" id="veh-photos" accept="image/*" multiple>
                 <div class="photo-zone-label">🚗 Tap to open gallery</div>
@@ -484,6 +494,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   let currentUser = null;
   let editingListingId = null;
   let editingListingData = null;
+  // Editable copies of the existing photo arrays (gets mutated by removeExistingPhoto)
+  let editingBizPhotos = [];
+  let editingVehPhotos = [];
 
   // ── AUTH STATE ──
   onAuthStateChanged(auth, user => {
@@ -605,11 +618,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     f.sideWork.value = listing.sideWork || '';
     f.communityOffer.value = listing.communityOffer || '';
     f.rides.value = listing.rides || '';
+    // Snapshot existing photos into editable arrays + render them as thumbs
+    editingBizPhotos = (listing.bizPhotos || []).slice();
+    editingVehPhotos = (listing.vehPhotos || []).slice();
+    renderExistingThumbs();
     // UI updates
     document.getElementById('edit-banner').style.display = 'flex';
     document.getElementById('edit-banner-text').textContent = `EDITING: ${listing.bizName}`;
     document.getElementById('form-head-title').textContent = 'EDIT YOUR LISTING';
-    document.getElementById('form-head-sub').textContent = 'Update your info. Adding photos appends to your existing ones. Use the \u2605 on your card to set the main photo.';
+    document.getElementById('form-head-sub').textContent = 'Update your info. Your current photos are shown below each section \u2014 tap \u2715 to remove individual ones. New uploads append to whatever\u2019s left.';
     document.getElementById('submit-btn').textContent = 'Save Changes';
     // Clear new-photo thumbs (these are for NEW uploads only)
     document.getElementById('biz-thumbs').innerHTML = '';
@@ -626,6 +643,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   window.cancelEdit = () => {
     editingListingId = null;
     editingListingData = null;
+    editingBizPhotos = [];
+    editingVehPhotos = [];
+    renderExistingThumbs();
     document.getElementById('signup-form').reset();
     document.getElementById('biz-thumbs').innerHTML = '';
     document.getElementById('veh-thumbs').innerHTML = '';
@@ -669,6 +689,32 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   }
   setupPhotoPicker('biz-photos', 'biz-thumbs');
   setupPhotoPicker('veh-photos', 'veh-thumbs');
+
+  // Render existing-photo thumbnails inside the edit form, with × buttons to remove individual photos
+  function renderExistingThumbs() {
+    const bizEl = document.getElementById('biz-existing');
+    const vehEl = document.getElementById('veh-existing');
+    const buildHtml = (urls, kind) => {
+      if (!urls.length) return '';
+      return `<div class="existing-thumbs-label">Current photos \u2014 tap \u2715 to remove (saves on Save Changes)</div>`
+        + urls.map((u, i) => `
+          <div class="existing-thumb-wrap">
+            <img src="${esc(u)}" alt="Existing photo">
+            <button type="button" class="existing-thumb-remove" onclick="removeExistingPhoto('${kind}',${i})" title="Remove this photo">\u2715</button>
+          </div>`).join('');
+    };
+    bizEl.innerHTML = buildHtml(editingBizPhotos, 'biz');
+    vehEl.innerHTML = buildHtml(editingVehPhotos, 'veh');
+    bizEl.classList.toggle('visible', editingBizPhotos.length > 0);
+    vehEl.classList.toggle('visible', editingVehPhotos.length > 0);
+  }
+
+  window.removeExistingPhoto = (kind, idx) => {
+    const arr = kind === 'biz' ? editingBizPhotos : editingVehPhotos;
+    if (idx < 0 || idx >= arr.length) return;
+    arr.splice(idx, 1);
+    renderExistingThumbs();
+  };
 
   // ── CLOUDINARY UPLOAD ──
   async function uploadToCloudinary(files, progressEl) {
@@ -722,9 +768,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         btn.textContent = 'SAVING...';
       }
       if (isEditing) {
-        // Append new photos to existing
-        const mergedBizPhotos = [...(editingListingData.bizPhotos || []), ...newBizPhotos];
-        const mergedVehPhotos = [...(editingListingData.vehPhotos || []), ...newVehPhotos];
+        // Merge: editing arrays reflect any removals the user made, plus newly uploaded photos
+        const mergedBizPhotos = [...editingBizPhotos, ...newBizPhotos];
+        const mergedVehPhotos = [...editingVehPhotos, ...newVehPhotos];
         const updatePayload = {
           bizName: f.bizName.value.trim(), bizType: f.bizType.value.trim(),
           location: f.location.value.trim(), address: f.address.value.trim(),
