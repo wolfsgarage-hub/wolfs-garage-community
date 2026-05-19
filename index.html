@@ -187,7 +187,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.3 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.4 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -364,14 +364,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       <button class="modal-tab" onclick="switchAuthTab('create')">Create Account</button>
     </div>
     <div id="auth-signin">
-      <input class="modal-input" id="signin-email" type="email" placeholder="Email">
-      <input class="modal-input" id="signin-pw" type="password" placeholder="Password">
-      <button class="modal-btn" onclick="doSignIn()">SIGN IN</button>
+      <form id="signin-form" onsubmit="event.preventDefault(); doSignIn();" autocomplete="on">
+        <input class="modal-input" id="signin-email" name="email" type="email" placeholder="Email" autocomplete="username" required>
+        <input class="modal-input" id="signin-pw" name="password" type="password" placeholder="Password" autocomplete="current-password" required>
+        <button class="modal-btn" type="submit">SIGN IN</button>
+      </form>
     </div>
     <div id="auth-create" style="display:none;">
-      <input class="modal-input" id="create-email" type="email" placeholder="Email">
-      <input class="modal-input" id="create-pw" type="password" placeholder="Password (min 6 chars)">
-      <button class="modal-btn" onclick="doCreateAccount()">CREATE ACCOUNT</button>
+      <form id="create-form" onsubmit="event.preventDefault(); doCreateAccount();" autocomplete="on">
+        <input class="modal-input" id="create-email" name="email" type="email" placeholder="Email" autocomplete="username" required>
+        <input class="modal-input" id="create-pw" name="password" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password" required minlength="6">
+        <button class="modal-btn" type="submit">CREATE ACCOUNT</button>
+      </form>
     </div>
     <div class="modal-error" id="auth-error"></div>
   </div>
