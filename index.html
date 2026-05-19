@@ -45,10 +45,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .filter-select{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;flex:1;min-width:200px;}
 .filter-select:focus{outline:none;border-color:var(--red);}
 .type-group{display:flex;align-items:center;gap:4px;flex:1;min-width:200px;}
-.type-wrap{flex:1;min-width:0;}
+.type-wrap{flex:1;min-width:0;position:relative;}
 .type-wrap .filter-select{width:100%;min-width:0;box-sizing:border-box;}
-.suggest-panel{display:none;background:var(--black);border:1px solid var(--red);border-top:none;max-height:280px;overflow-y:auto;margin-top:-1px;}
+.suggest-panel{display:none;position:absolute;top:100%;left:0;right:0;z-index:9999;background:var(--black);border:1px solid var(--red);border-top:none;max-height:280px;overflow-y:auto;margin-top:0;box-shadow:0 8px 24px rgba(0,0,0,0.6);}
 .suggest-panel.open{display:block;}
+.suggest-panel.flip-above{top:auto;bottom:100%;border-top:1px solid var(--red);border-bottom:none;box-shadow:0 -8px 24px rgba(0,0,0,0.6);}
 .suggest-item{padding:14px 14px;font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:1px;color:var(--bone);cursor:pointer;border-bottom:1px solid rgba(245,241,232,0.08);user-select:none;-webkit-tap-highlight-color:rgba(204,0,0,0.3);}
 .suggest-item:active{background:var(--red);}
 .suggest-item:last-child{border-bottom:none;}
@@ -188,7 +189,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.5 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.19.6 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -227,11 +228,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       <div class="type-group">
         <div class="type-wrap">
           <input class="filter-select" type="text" id="service-filter" placeholder="Type or pick a business type..." autocomplete="off" oninput="onServiceInput()" onfocus="openSuggestions()" onblur="closeSuggestionsSoon()">
+          <div class="suggest-panel" id="suggest-panel" role="listbox"></div>
         </div>
         <button type="button" class="clear-btn" id="clear-service-btn" onclick="clearService()" title="Clear">×</button>
       </div>
     </div>
-    <div class="suggest-panel" id="suggest-panel" role="listbox"></div>
     <div class="filter-row">
       <div class="zip-group">
         <span class="filter-label">// ZIP</span>
@@ -698,6 +699,21 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       renderSuggestions(document.getElementById('service-filter').value);
     }
   }
+  function positionPanel() {
+    const panel = document.getElementById('suggest-panel');
+    const input = document.getElementById('service-filter');
+    if (!panel || !input) return;
+    const inputRect = input.getBoundingClientRect();
+    const viewportHeight = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    const spaceBelow = viewportHeight - inputRect.bottom;
+    const spaceAbove = inputRect.top;
+    // Need ~160px below input to fit at least 4 items; flip above if cramped AND there's more room up
+    if (spaceBelow < 160 && spaceAbove > spaceBelow) {
+      panel.classList.add('flip-above');
+    } else {
+      panel.classList.remove('flip-above');
+    }
+  }
   function renderSuggestions(query) {
     const panel = document.getElementById('suggest-panel');
     const q = (query || '').trim().toLowerCase();
@@ -717,7 +733,15 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     } else {
       panel.innerHTML = matches.map(t => `<div class="suggest-item" onmousedown="event.preventDefault();pickSuggestion('${t.replace(/'/g, "\\'")}')" ontouchstart="event.preventDefault();pickSuggestion('${t.replace(/'/g, "\\'")}')">${t}</div>`).join('');
     }
+    positionPanel();
     panel.classList.add('open');
+  }
+  // Re-position on viewport resize (keyboard show/hide rotates this on Android Chrome)
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      const panel = document.getElementById('suggest-panel');
+      if (panel && panel.classList.contains('open')) positionPanel();
+    });
   }
   window.onServiceInput = function() {
     renderSuggestions(document.getElementById('service-filter').value);
