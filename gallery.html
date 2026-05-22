@@ -239,14 +239,14 @@
       const q = query(collection(db, 'wolf_photos'), orderBy('addedAt', 'desc'));
       const snap = await getDocs(q);
       const photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      lightboxPhotos = photos.map(p => p.imageData);
+      lightboxPhotos = photos.map(p => p.imageData || p.imageUrl);
       if (photos.length === 0) {
         grid.innerHTML = '<div class="empty"><div class="empty-icon">🔧</div><div class="empty-text">NOTHING YET.<br>CHECK BACK SOON.</div></div>';
         return;
       }
       grid.innerHTML = photos.map((p,i) => `
         <div class="photo-item" onclick="openLightbox(${i},'wolf')">
-          <img src="${p.imageData}" loading="lazy" alt="Wolf's photo">
+          <img src="${p.imageData || p.imageUrl}" loading="lazy" alt="Wolf's photo">
         </div>
       `).join('');
     } catch(e) {
@@ -262,14 +262,14 @@
       const q = query(collection(db, 'pack_photos'), where('status','==','approved'));
       const snap = await getDocs(q);
       const photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      lightboxPhotos = photos.map(p => p.imageData);
+      lightboxPhotos = photos.map(p => p.imageData || p.imageUrl);
       if (photos.length === 0) {
         grid.innerHTML = '<div class="empty"><div class="empty-icon">📷</div><div class="empty-text">NO PACK PHOTOS YET.<br>BE THE FIRST TO SUBMIT.</div></div>';
         return;
       }
       grid.innerHTML = photos.map((p,i) => `
         <div class="photo-item" onclick="openLightbox(${i},'pack')">
-          <img src="${p.imageData}" loading="lazy" alt="Pack photo">
+          <img src="${p.imageData || p.imageUrl}" loading="lazy" alt="Pack photo">
         </div>
       `).join('');
     } catch(e) {
