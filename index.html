@@ -190,6 +190,28 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .preview-label{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:var(--copper);text-transform:uppercase;margin-bottom:8px;}
 .preview-img-wrap{position:relative;width:100%;aspect-ratio:1/1;background:#1a1a1a;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .preview-img-wrap img{width:100%;height:100%;object-fit:cover;cursor:pointer;display:block;}
+.preview-img-wrap .add-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:#1a1a1a;color:rgba(245,241,232,0.7);cursor:pointer;border:2px dashed rgba(204,0,0,0.5);transition:all 0.2s;}
+.preview-img-wrap .add-tile:hover,.preview-img-wrap .add-tile:active{border-color:var(--red);background:rgba(204,0,0,0.05);color:var(--bone);}
+.preview-img-wrap .add-tile .add-icon{font-size:48px;line-height:1;margin-bottom:8px;color:var(--red);}
+.preview-img-wrap .add-tile .add-label{font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;}
+
+/* Photo carousel lightbox */
+.photo-lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;}
+.photo-lightbox.open{display:flex;flex-direction:column;}
+.photo-lightbox-close{position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.6);border:1px solid var(--border);color:var(--bone);width:42px;height:42px;cursor:pointer;font-size:20px;z-index:10001;display:flex;align-items:center;justify-content:center;}
+.photo-lightbox-track{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;}
+.photo-lightbox-track::-webkit-scrollbar{display:none;}
+.photo-lightbox-track{-ms-overflow-style:none;scrollbar-width:none;}
+.photo-lightbox-slide{flex:0 0 100%;width:100%;height:100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:60px 14px;box-sizing:border-box;}
+.photo-lightbox-slide img{max-width:100%;max-height:100%;object-fit:contain;}
+.photo-lightbox-slide.is-add{cursor:pointer;}
+.photo-lightbox-slide .add-tile-lg{display:flex;flex-direction:column;align-items:center;justify-content:center;width:80%;max-width:320px;aspect-ratio:1;border:2px dashed var(--red);background:rgba(204,0,0,0.05);color:var(--bone);transition:all 0.2s;}
+.photo-lightbox-slide .add-tile-lg:hover,.photo-lightbox-slide .add-tile-lg:active{background:rgba(204,0,0,0.12);}
+.photo-lightbox-slide .add-tile-lg .add-icon{font-size:80px;line-height:1;margin-bottom:12px;color:var(--red);}
+.photo-lightbox-slide .add-tile-lg .add-label{font-family:'Oswald',sans-serif;font-size:16px;letter-spacing:4px;text-transform:uppercase;}
+.photo-lightbox-counter{position:absolute;top:20px;left:14px;background:rgba(0,0,0,0.6);color:var(--bone);font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:2px;padding:6px 12px;text-transform:uppercase;z-index:10001;}
+.photo-lightbox-uploading{position:absolute;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;color:var(--copper);font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:3px;text-transform:uppercase;z-index:10002;}
+.photo-lightbox-uploading.show{display:flex;}
 .preview-empty{font-family:'Special Elite',monospace;font-size:11px;letter-spacing:1px;color:rgba(245,241,232,0.4);text-align:center;padding:20px;line-height:1.5;}
 .preview-controls{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:var(--bone);}
 .preview-arrow{background:transparent;border:1px solid var(--bone);color:var(--bone);width:32px;height:32px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-family:'Oswald',sans-serif;}
@@ -1209,21 +1231,21 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         ? `<div class="location-status ok">\u2713 Map pin live at: ${esc(l.location || l.address || 'set coordinates')}</div>`
         : `<div class="location-status pending">\u26A0 No map pin yet. Tap FIX LOCATION below or EDIT to enter a typed address (Google Maps share URLs can\u2019t be read by the browser).</div>`;
       const bizPreview = bizMainUrl
-        ? `<div class="preview-img-wrap"><img src="${esc(bizMainUrl)}" onclick="window.open('${esc(bizMainUrl)}','_blank')" alt="Main business photo"></div>
+        ? `<div class="preview-img-wrap" data-listing="${l.id}" data-kind="biz"><img src="${esc(bizMainUrl)}" onclick="openPhotoCarousel('${l.id}','biz',${mainBizIdx})" alt="Main business photo"></div>
            <div class="preview-controls">
              <button class="preview-arrow" onclick="cycleMain('${l.id}','biz',-1)" ${bizPhotos.length<=1?'disabled':''} title="Previous photo">\u2039</button>
              <span class="preview-count">${mainBizIdx + 1} / ${bizPhotos.length}</span>
              <button class="preview-arrow" onclick="cycleMain('${l.id}','biz',1)" ${bizPhotos.length<=1?'disabled':''} title="Next photo">\u203A</button>
            </div>`
-        : `<div class="preview-img-wrap"><div class="preview-empty">No business photos.<br>Tap EDIT to upload.</div></div>`;
+        : `<div class="preview-img-wrap"><div class="add-tile" onclick="triggerAddPhoto('${l.id}','biz')"><span class="add-icon">+</span><span class="add-label">Add Photo</span></div></div>`;
       const vehPreview = vehMainUrl
-        ? `<div class="preview-img-wrap"><img src="${esc(vehMainUrl)}" onclick="window.open('${esc(vehMainUrl)}','_blank')" alt="Main ride photo"></div>
+        ? `<div class="preview-img-wrap" data-listing="${l.id}" data-kind="veh"><img src="${esc(vehMainUrl)}" onclick="openPhotoCarousel('${l.id}','veh',${mainVehIdx})" alt="Main ride photo"></div>
            <div class="preview-controls">
              <button class="preview-arrow" onclick="cycleMain('${l.id}','veh',-1)" ${vehPhotos.length<=1?'disabled':''} title="Previous photo">\u2039</button>
              <span class="preview-count">${mainVehIdx + 1} / ${vehPhotos.length}</span>
              <button class="preview-arrow" onclick="cycleMain('${l.id}','veh',1)" ${vehPhotos.length<=1?'disabled':''} title="Next photo">\u203A</button>
            </div>`
-        : `<div class="preview-img-wrap"><div class="preview-empty">No ride photos.<br>Tap EDIT to upload.</div></div>`;
+        : `<div class="preview-img-wrap"><div class="add-tile" onclick="triggerAddPhoto('${l.id}','veh')"><span class="add-icon">+</span><span class="add-label">Add Photo</span></div></div>`;
       return `
         <div class="my-profile-head">
           <div>
@@ -1233,11 +1255,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         </div>
         <div class="preview-row">
           <div class="preview-slot">
-            <div class="preview-label">Business preview \u2014 use \u2039 \u203A to swap main</div>
+            <div class="preview-label">Business preview \u2014 tap to view all, swipe or use \u2039 \u203A to swap main</div>
             ${bizPreview}
           </div>
           <div class="preview-slot">
-            <div class="preview-label">Ride preview \u2014 use \u2039 \u203A to swap main</div>
+            <div class="preview-label">Ride preview \u2014 tap to view all, swipe or use \u2039 \u203A to swap main</div>
             ${vehPreview}
           </div>
         </div>
@@ -1318,6 +1340,166 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       showToast('SAVE FAILED');
     }
   };
+
+  // ── PHOTO CAROUSEL LIGHTBOX + ADD-PHOTO PIPELINE ──
+  // State for the currently-open lightbox so the carousel swipe + add-tile know where to operate.
+  let lightboxState = null; // { listingId, kind, photos: [] }
+  // State for what's expecting a file from the hidden upload input.
+  let pendingUploadTarget = null; // { listingId, kind, fromLightbox: bool }
+
+  window.openPhotoCarousel = (listingId, kind, startIdx) => {
+    const i = (allListingsData || []).findIndex(l => l.id === listingId);
+    if (i < 0) return;
+    const l = allListingsData[i];
+    const photos = (kind === 'biz' ? (l.bizPhotos || []) : (l.vehPhotos || [])).slice();
+    lightboxState = { listingId, kind, photos };
+    renderLightboxTrack(startIdx);
+    document.getElementById('photoLightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closePhotoLightbox = () => {
+    document.getElementById('photoLightbox').classList.remove('open');
+    document.body.style.overflow = '';
+    lightboxState = null;
+  };
+
+  function renderLightboxTrack(startIdx) {
+    if (!lightboxState) return;
+    const track = document.getElementById('photoLightboxTrack');
+    const counter = document.getElementById('photoLightboxCounter');
+    const photos = lightboxState.photos;
+    // Track layout: [+Add] [photo 1] [photo 2] ... [photo N] [+Add]
+    // Slide indexes: 0 = left add, 1..N = photos, N+1 = right add
+    const slides = [];
+    slides.push(`<div class="photo-lightbox-slide is-add" onclick="triggerAddPhoto('${lightboxState.listingId}','${lightboxState.kind}',true)"><div class="add-tile-lg"><span class="add-icon">+</span><span class="add-label">Add Photo</span></div></div>`);
+    photos.forEach((url, idx) => {
+      slides.push(`<div class="photo-lightbox-slide"><img src="${esc(url)}" alt="Photo ${idx + 1}"></div>`);
+    });
+    slides.push(`<div class="photo-lightbox-slide is-add" onclick="triggerAddPhoto('${lightboxState.listingId}','${lightboxState.kind}',true)"><div class="add-tile-lg"><span class="add-icon">+</span><span class="add-label">Add Photo</span></div></div>`);
+    track.innerHTML = slides.join('');
+    // Default start position: the photo the user tapped on, mapped to slide index startIdx+1.
+    // If photos is empty, both slides are add-tiles and we land on the first.
+    const targetSlide = photos.length > 0 ? Math.min(startIdx + 1, photos.length) : 0;
+    // Wait one frame so layout is set, then scroll to target.
+    requestAnimationFrame(() => {
+      const slideEl = track.children[targetSlide];
+      if (slideEl) slideEl.scrollIntoView({ behavior: 'auto', inline: 'center' });
+      updateLightboxCounter();
+    });
+    track.onscroll = () => {
+      updateLightboxCounter();
+    };
+  }
+
+  function updateLightboxCounter() {
+    if (!lightboxState) return;
+    const track = document.getElementById('photoLightboxTrack');
+    const counter = document.getElementById('photoLightboxCounter');
+    if (!track || !counter) return;
+    const slideWidth = track.clientWidth;
+    if (slideWidth === 0) return;
+    const idx = Math.round(track.scrollLeft / slideWidth);
+    const photos = lightboxState.photos;
+    if (idx === 0 || idx === photos.length + 1) {
+      counter.textContent = 'ADD PHOTO';
+    } else {
+      counter.textContent = `${idx} / ${photos.length}`;
+    }
+  }
+
+  // Triggered by the add-tile in the preview frame OR a lightbox add-tile.
+  window.triggerAddPhoto = (listingId, kind, fromLightbox = false) => {
+    pendingUploadTarget = { listingId, kind, fromLightbox };
+    const inp = document.getElementById('hiddenPhotoUpload');
+    inp.value = '';
+    inp.click();
+  };
+
+  // When user picks a file, upload + append to listing.
+  document.getElementById('hiddenPhotoUpload').addEventListener('change', async (e) => {
+    if (!pendingUploadTarget) return;
+    const files = Array.from(e.target.files);
+    if (!files.length) { pendingUploadTarget = null; return; }
+    const { listingId, kind, fromLightbox } = pendingUploadTarget;
+    const i = (allListingsData || []).findIndex(l => l.id === listingId);
+    if (i < 0) { pendingUploadTarget = null; return; }
+    // Show uploading state (either lightbox overlay or just a toast)
+    const overlay = document.getElementById('photoLightboxUploading');
+    if (fromLightbox && overlay) overlay.classList.add('show');
+    try {
+      // Re-use the existing upload pipeline. uploadToCloudinary expects a progress element.
+      // We pass the overlay as the "progress" target but it'll just be a fixed message — the
+      // function sets style.display and style.width on it. Resetting after the upload.
+      overlay.style.display = 'flex';
+      const urls = await uploadToCloudinary(files, overlay);
+      overlay.style.display = '';
+      overlay.style.width = '';
+      if (fromLightbox) overlay.classList.add('show'); // re-show our message after upload util reset display
+      if (!urls.length) {
+        showToast('UPLOAD FAILED');
+        if (overlay) overlay.classList.remove('show');
+        pendingUploadTarget = null;
+        return;
+      }
+      // Append URLs to the listing doc
+      const l = allListingsData[i];
+      const field = kind === 'biz' ? 'bizPhotos' : 'vehPhotos';
+      const currentArr = (l[field] || []).slice();
+      const newArr = currentArr.concat(urls);
+      const { updateDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js');
+      await updateDoc(doc(db, 'listings', listingId), { [field]: newArr });
+      allListingsData[i][field] = newArr;
+      // If this was the first photo in the category, set it as main automatically.
+      if (currentArr.length === 0) {
+        const mainField = kind === 'biz' ? 'mainPhotoIdx' : 'mainVehicleIdx';
+        await updateDoc(doc(db, 'listings', listingId), { [mainField]: 0 });
+        allListingsData[i][mainField] = 0;
+      }
+      // Refresh UI
+      renderMyProfile();
+      if (typeof renderCards === 'function') renderCards(allListingsData);
+      if (overlay) overlay.classList.remove('show');
+      // If the lightbox was open, re-populate it with the new photos and snap to the newly added one.
+      if (fromLightbox && lightboxState && lightboxState.listingId === listingId && lightboxState.kind === kind) {
+        lightboxState.photos = newArr;
+        // Land on the first newly-added photo (originalLength + 0)
+        renderLightboxTrack(currentArr.length);
+      }
+      showToast(`PHOTO ADDED (${urls.length})`);
+    } catch (err) {
+      console.error('Add-photo upload failed:', err);
+      showToast('UPLOAD FAILED');
+      if (overlay) overlay.classList.remove('show');
+    }
+    pendingUploadTarget = null;
+  });
+
+  // ── SWIPE IN PREVIEW FRAME = CYCLE MAIN ──
+  // Delegated touch listener on document so it works for any preview-img-wrap currently rendered.
+  let _swipe = null;
+  document.addEventListener('touchstart', (e) => {
+    const wrap = e.target.closest('.preview-img-wrap');
+    if (!wrap || !wrap.dataset.listing) return;
+    _swipe = { x: e.touches[0].clientX, y: e.touches[0].clientY, wrap };
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (!_swipe) return;
+    const t = (e.changedTouches && e.changedTouches[0]) || null;
+    if (!t) { _swipe = null; return; }
+    const dx = t.clientX - _swipe.x;
+    const dy = t.clientY - _swipe.y;
+    const w = _swipe.wrap;
+    _swipe = null;
+    // Only treat as swipe if horizontal and over 40px, and not too diagonal.
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+    e.preventDefault();
+    const listingId = w.dataset.listing;
+    const kind = w.dataset.kind;
+    if (!listingId || !kind) return;
+    const dir = dx < 0 ? 1 : -1; // swipe left = next, swipe right = previous
+    if (typeof cycleMain === 'function') cycleMain(listingId, kind, dir);
+  });
 
   // ── VIEW MODE: MY PROFILE vs PUBLIC GRID ──
   // Rule: when signed in AND filter blank AND user owns >=1 listing → show MY PROFILE, hide grid.
@@ -1702,5 +1884,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     if (window.__wgLog) window.__wgLog('MAP: google not yet loaded at module-end (waiting for async callback)');
   }
 </script>
+<!-- Photo carousel lightbox -->
+<div class="photo-lightbox" id="photoLightbox">
+  <div class="photo-lightbox-counter" id="photoLightboxCounter"></div>
+  <button class="photo-lightbox-close" aria-label="Close" onclick="closePhotoLightbox()">&#10005;</button>
+  <div class="photo-lightbox-track" id="photoLightboxTrack"></div>
+  <div class="photo-lightbox-uploading" id="photoLightboxUploading">Uploading...</div>
+</div>
+
+<!-- Hidden file input shared by all photo-add tiles -->
+<input type="file" id="hiddenPhotoUpload" accept="image/jpeg,image/png" multiple style="display:none;">
+
 </body>
 </html>
