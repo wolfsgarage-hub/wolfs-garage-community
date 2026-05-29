@@ -92,10 +92,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .modal{background:var(--gray-warm);border:1px solid var(--line);padding:40px;width:100%;max-width:400px;position:relative;}
 .modal::before{content:'';position:absolute;top:-2px;left:0;right:0;height:3px;background:var(--red);}
 .modal-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;margin-bottom:6px;}
-.modal-sub{font-family:'Special Elite',monospace;font-size:11px;color:var(--copper);letter-spacing:2px;margin-bottom:28px;}
+.modal-sub{font-family:'Special Elite',monospace;font-size:11px;color:var(--copper);letter-spacing:2px;margin-bottom:14px;}
+.modal-context{font-family:'Work Sans',sans-serif;font-size:13px;color:rgba(245,241,232,0.75);line-height:1.5;margin-bottom:22px;padding:10px 12px;background:rgba(204,0,0,0.06);border-left:2px solid var(--red);}
 .modal-tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:24px;}
 .modal-tab{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;padding:10px 18px;background:transparent;color:rgba(245,241,232,0.5);border:none;cursor:pointer;}
 .modal-tab.active{color:var(--bone);border-bottom:2px solid var(--red);}
+.modal-tab.create-tab{color:var(--red);font-weight:600;}
+.modal-tab.create-tab.active{color:var(--red);border-bottom-color:var(--red);}
 .modal-input{width:100%;background:var(--black);border:1px solid var(--line);color:var(--bone);padding:14px 16px;font-family:'Work Sans',sans-serif;font-size:15px;margin-bottom:14px;}
 .pw-wrap{position:relative;margin-bottom:14px;}
 .pw-wrap .pw-input{margin-bottom:0;padding-right:48px;}
@@ -478,9 +481,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <button class="modal-close" onclick="closeAuthModal()">✕</button>
     <div class="modal-title">WOLF'S GARAGE</div>
     <div class="modal-sub">SIGN IN TO GET LISTED</div>
+    <div class="modal-context">Create a free Wolf's Garage account to list your business, post events, or share gallery photos. No spam. Listings are reviewed before going live.</div>
     <div class="modal-tabs">
       <button class="modal-tab active" onclick="switchAuthTab('signin')">Sign In</button>
-      <button class="modal-tab" onclick="switchAuthTab('create')">Create Account</button>
+      <button class="modal-tab create-tab" onclick="switchAuthTab('create')">Create Free Account</button>
     </div>
     <div id="auth-signin">
       <form id="signin-form" onsubmit="event.preventDefault(); doSignIn();" autocomplete="on">
@@ -518,7 +522,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </div>
 
 <div class="footer">
-  <div class="container">WOLF'S GARAGE LLC · PORTLAND, OREGON · GET BACK IN THE GARAGE</div>
+  <div class="container">HOT RODDER DIRECTORY · POWERED BY WOLF'S GARAGE · WOLFSGARAGE.COM · GET BACK IN THE GARAGE</div>
 </div>
 
 <div class="toast" id="toast"></div>
