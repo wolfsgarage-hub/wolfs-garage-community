@@ -24,6 +24,10 @@
   .login-sub{font-family:'Special Elite',monospace;font-size:11px;color:var(--copper);letter-spacing:2px;margin-bottom:32px;}
   .login-input{width:100%;background:var(--black);border:1px solid var(--line);color:var(--bone);padding:16px;font-family:'Work Sans',sans-serif;font-size:16px;margin-bottom:16px;}
   .login-input:focus{outline:none;border-color:var(--red);}
+  .pw-row{display:flex;gap:8px;margin-bottom:16px;}
+  .pw-row .login-input{flex:1;margin-bottom:0;}
+  .pw-toggle{flex:0 0 auto;background:var(--black);border:1px solid var(--line);color:var(--bone);font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;padding:0 16px;cursor:pointer;min-width:64px;}
+  .pw-toggle:hover,.pw-toggle:active{border-color:var(--red);color:var(--red);}
   .login-btn{width:100%;background:var(--red);color:var(--bone);border:none;padding:16px;font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:3px;cursor:pointer;transition:background 0.2s;}
   .login-btn:hover{background:var(--red-dark);}
   .login-error{color:var(--red);font-size:13px;margin-top:12px;font-family:'Special Elite',monospace;display:none;}
@@ -113,7 +117,10 @@
   <div class="login-card">
     <div class="login-title">WOLF'S GARAGE</div>
     <div class="login-sub">ADMIN ACCESS ONLY</div>
-    <input class="login-input" type="password" id="pw-input" placeholder="Password" autocomplete="current-password">
+    <div class="pw-row">
+      <input class="login-input" type="password" id="pw-input" placeholder="Password" autocomplete="current-password">
+      <button type="button" class="pw-toggle" id="pw-toggle" onclick="togglePw()" aria-label="Show password">SHOW</button>
+    </div>
     <button class="login-btn" onclick="doLogin()">ENTER THE GARAGE</button>
     <div class="login-error" id="login-error">WRONG PASSWORD. TRY AGAIN.</div>
   </div>
@@ -219,6 +226,14 @@
   let allListings = [];
 
   // ── AUTH ──
+  window.togglePw = function(){
+    var f=document.getElementById('pw-input'), b=document.getElementById('pw-toggle');
+    var show=f.type==='password';
+    f.type=show?'text':'password';
+    b.textContent=show?'HIDE':'SHOW';
+    b.setAttribute('aria-label', show?'Hide password':'Show password');
+    f.focus();
+  };
   window.doLogin = function() {
     const val = document.getElementById('pw-input').value;
     if (val === PASS) {
