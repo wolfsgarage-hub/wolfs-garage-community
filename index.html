@@ -300,7 +300,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.6 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.7 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -347,7 +347,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div class="filter-row">
       <div class="zip-group">
         <span class="filter-label">// ZIP</span>
-        <input class="filter-input" type="text" id="zip-filter" inputmode="numeric" pattern="\d{5}" maxlength="5" value="97217" onchange="setZipFromInput(this.value)">
+        <input class="filter-input" type="text" id="zip-filter" inputmode="text" maxlength="5" value="97217" onchange="setZipFromInput(this.value)" title="Enter a 5-digit ZIP, or type ALL to show every listing">
         <button type="button" class="locate-btn" id="locate-btn" onclick="detectUserZip()" title="Use my location">📍</button>
       </div>
       <select class="filter-radius" id="radius-filter" onchange="applyFilters()">
@@ -1782,6 +1782,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   const DEFAULT_ZIP = '97217';
   let currentZipLatLng = null;
   let currentZip = DEFAULT_ZIP;
+  let showAllZip = false;
 
   function distanceMiles(lat1, lng1, lat2, lng2) {
     const R = 3958.8;
@@ -1803,7 +1804,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         (l.bizName || '').toLowerCase().includes(q)
       );
     }
-    if (radius > 0 && currentZipLatLng) {
+    if (!showAllZip && radius > 0 && currentZipLatLng) {
       filtered = filtered.filter(l =>
         !l.lat || !l.lng || distanceMiles(currentZipLatLng.lat, currentZipLatLng.lng, l.lat, l.lng) <= radius
       );
@@ -1813,7 +1814,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   };
 
   window.setZipFromInput = function(raw) {
-    const zip = (raw || '').trim();
+    const val = (raw || '').trim();
+    if (val.toLowerCase() === 'all') {
+      showAllZip = true;
+      document.getElementById('zip-filter').value = 'ALL';
+      applyFilters();
+      return;
+    }
+    const zip = val;
     if (!/^\d{5}$/.test(zip)) {
       document.getElementById('zip-filter').value = currentZip;
       return;
@@ -1827,6 +1835,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       if (status === 'OK' && results[0]) {
         const loc = results[0].geometry.location;
         currentZip = zip;
+        showAllZip = false;
         currentZipLatLng = { lat: loc.lat(), lng: loc.lng() };
         if (map) map.setCenter(currentZipLatLng);
         applyFilters();
