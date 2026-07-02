@@ -300,7 +300,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.8 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.9 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -844,7 +844,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       ${photoStrip(bizPhotos, mainBiz)}
       <h2>${esc(l.bizName || '')}</h2>
       <div class="detail-type">${esc(l.bizType || '')}</div>
-      <div class="detail-loc">${esc(l.location || '')}${cleanAddr ? ' \u00B7 ' + esc(cleanAddr) : ''}</div>
+      <div class="detail-loc">${esc(fmtLoc(l.location || ''))}${cleanAddr ? ' \u00B7 ' + esc(cleanAddr) : ''}</div>
       <div class="detail-section"><div class="detail-section-label">BUSINESS INFO</div></div>
       ${section('WEBSITE', websiteHref ? '<a href="' + esc(websiteHref) + '" target="_blank" rel="noopener">' + esc(websiteUrl) + '</a>' : '')}
       ${section('CONTACT', l.contact ? '<a href="mailto:' + esc(l.contact) + '">' + esc(l.contact) + '</a>' : '')}
@@ -1028,7 +1028,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
           ${(mainBizPhoto || mainVehPhoto) ? `<div class="listing-photos">${mainBizPhoto ? `<div style="position:relative;display:inline-block;"><img src="${mainBizPhoto}" class="main-photo" title="Business preview"></div>` : ''}${mainVehPhoto ? `<div style="position:relative;display:inline-block;"><img src="${mainVehPhoto}" class="main-photo" title="Ride preview"></div>` : ''}</div>` : ''}
           <div class="biz-name">${esc(l.bizName)}</div>
           <div class="biz-type">${esc(l.bizType)}</div>
-          <div class="biz-loc">${esc(l.location)}${l.website ? ' · <a href="'+esc(l.website)+'" target="_blank" style="color:var(--copper);text-decoration:underline;" onclick="event.stopPropagation()">site</a>' : ''}</div>
+          <div class="biz-loc">${esc(fmtLoc(l.location))}${l.website ? ' · <a href="'+esc(l.website)+'" target="_blank" style="color:var(--copper);text-decoration:underline;" onclick="event.stopPropagation()">site</a>' : ''}</div>
           ${needsPin ? '<div class="loc-pending">\u26A0 LOCATION PENDING</div>' : ''}
           <div class="biz-bio">${esc(l.bio)}</div>
           ${l.rides ? `<div class="biz-rides">RIDES: ${esc(l.rides)}</div>` : ''}
@@ -1566,6 +1566,36 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     if (!s) return '';
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
+  // ── DISPLAY-ONLY LOCATION NORMALIZER (v3.21.9) ──
+  // Cleans how a listing's location renders on cards/detail. NEVER writes to
+  // Firestore — stored data is untouched. "vancouver. wa" -> "Vancouver, WA",
+  // "Portland or" -> "Portland, OR", "Vancouver Washington" -> "Vancouver, WA".
+  // Unrecognized input is returned lightly cleaned (trim + collapse spaces).
+  const US_STATES = {alabama:'AL',alaska:'AK',arizona:'AZ',arkansas:'AR',california:'CA',colorado:'CO',connecticut:'CT',delaware:'DE',florida:'FL',georgia:'GA',hawaii:'HI',idaho:'ID',illinois:'IL',indiana:'IN',iowa:'IA',kansas:'KS',kentucky:'KY',louisiana:'LA',maine:'ME',maryland:'MD',massachusetts:'MA',michigan:'MI',minnesota:'MN',mississippi:'MS',missouri:'MO',montana:'MT',nebraska:'NE',nevada:'NV','new hampshire':'NH','new jersey':'NJ','new mexico':'NM','new york':'NY','north carolina':'NC','north dakota':'ND',ohio:'OH',oklahoma:'OK',oregon:'OR',pennsylvania:'PA','rhode island':'RI','south carolina':'SC','south dakota':'SD',tennessee:'TN',texas:'TX',utah:'UT',vermont:'VT',virginia:'VA',washington:'WA','west virginia':'WV',wisconsin:'WI',wyoming:'WY','district of columbia':'DC'};
+  const US_ABBR = new Set(Object.values(US_STATES));
+  function tcWord(w){ return (w===w.toLowerCase()||w===w.toUpperCase()) ? w.charAt(0).toUpperCase()+w.slice(1).toLowerCase() : w; }
+  function tcCity(c){ return c.split(/\s+/).map(tcWord).join(' '); }
+  function fmtLoc(s){
+    if(!s) return '';
+    let str=String(s).trim().replace(/\s+/g,' ');
+    if(!str) return '';
+    let city='', stateRaw='';
+    const ci=str.lastIndexOf(',');
+    if(ci>=0){ city=str.slice(0,ci).trim(); stateRaw=str.slice(ci+1).trim(); }
+    else {
+      const toks=str.split(' ');
+      const last2=toks.slice(-2).join(' ').replace(/\.+$/,'').toLowerCase();
+      const last1=toks.slice(-1)[0].replace(/\.+$/,'').toLowerCase();
+      if(toks.length>=3 && US_STATES[last2]){ stateRaw=last2; city=toks.slice(0,-2).join(' '); }
+      else if(toks.length>=2 && (US_STATES[last1]||US_ABBR.has(last1.toUpperCase()))){ stateRaw=last1; city=toks.slice(0,-1).join(' '); }
+      else { return str.replace(/\.+$/,''); }
+    }
+    city=city.replace(/[.,]+$/,'').trim();
+    const stKey=stateRaw.replace(/\.+$/,'').trim().toLowerCase();
+    const abbr=US_STATES[stKey] || (US_ABBR.has(stKey.toUpperCase())?stKey.toUpperCase():'');
+    if(!abbr || !city){ return str.replace(/\.+$/,''); }
+    return tcCity(city)+', '+abbr;
+  }
 
 
 
@@ -1915,17 +1945,21 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   renderApproved();
   loadFeatured();
 
-  // Race guard: if Google Maps loaded before the module finished, the API's
-  // callback fired against a window.initMap that didn't exist yet. Detect this
-  // and call initMap manually now that it's attached.
-  if (typeof google !== 'undefined' && google.maps && !map) {
-    if (window.__wgLog) window.__wgLog('MAP: google ready at module-end, calling initMap manually (race)');
-    try { window.initMap(); } catch(e) {
-      if (window.__wgLog) window.__wgLog('MAP-ERR: initMap threw: ' + (e.message || e));
+  // Robust map init (v3.21.9): the async Maps script uses callback=initMap, but
+  // this module is deferred, so the callback can fire before window.initMap exists
+  // and Google never retries -> map stays undefined and the tile area is blank.
+  // Poll until google.maps is ready, then run initMap ourselves. renderApproved()
+  // already waits on `map` before dropping markers, so pins appear once this runs.
+  (function ensureMapInit(tries){
+    if (map) return; // already initialized by the callback or a prior tick
+    if (typeof google !== 'undefined' && google.maps) {
+      try { window.initMap(); } catch(e) {
+        if (window.__wgLog) window.__wgLog('MAP-ERR: initMap threw: ' + (e.message || e));
+      }
+    } else if (tries > 0) {
+      setTimeout(function(){ ensureMapInit(tries - 1); }, 150);
     }
-  } else if (typeof google === 'undefined') {
-    if (window.__wgLog) window.__wgLog('MAP: google not yet loaded at module-end (waiting for async callback)');
-  }
+  })(60); // ~9s of retries while the async Maps script finishes loading
 </script>
 <!-- Photo carousel lightbox -->
 <div class="photo-lightbox" id="photoLightbox">
