@@ -11,6 +11,7 @@
     --black:#0A0A0A; --ink:#1A1A1A; --bone:#F5F1E8;
     --red:#CC0000; --red-dark:#990000; --copper:#C8922A;
     --gray-warm:#2A2520; --line:rgba(245,241,232,0.12);
+    --wg-ease:cubic-bezier(.22,1,.36,1);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{background:var(--black);color:var(--bone);font-family:'Work Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
@@ -105,13 +106,50 @@
 
   .footer{background:var(--ink);border-top:1px solid var(--line);padding:30px 0;margin-top:60px;}
   .footer .container{font-family:'Special Elite',monospace;font-size:11px;color:rgba(245,241,232,0.4);letter-spacing:2px;text-align:center;}
+
+  /* ═══════════════ v3.22.0 FULL SHOW BUILD — animation layer ═══════════════ */
+  /* Fail-open: gated behind html.wg-anim-ready (added by the classic script
+     at the end of <body>). No JS = page renders exactly as before. */
+  @keyframes wg-rise{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:none;}}
+  @keyframes wg-draw{to{stroke-dashoffset:0;}}
+  @keyframes wg-modal-in{from{opacity:0;transform:translateY(14px) scale(.985);}to{opacity:1;transform:none;}}
+
+  html.wg-anim-ready .wg-boot{animation:wg-rise .7s var(--wg-ease) both;}
+  html.wg-anim-ready .wg-boot-1{animation-delay:.05s;}
+  html.wg-anim-ready .wg-boot-2{animation-delay:.15s;}
+  html.wg-anim-ready .wg-boot-3{animation-delay:.25s;}
+  html.wg-anim-ready .wg-boot-4{animation-delay:.35s;}
+
+  html.wg-anim-ready .wg-reveal{transition:opacity .6s var(--wg-ease),transform .6s var(--wg-ease);}
+  html.wg-anim-ready .wg-reveal:not(.wg-in){opacity:0;transform:translateY(22px);}
+
+  /* pinstripe draw-on (paths carry pathLength="1") */
+  html.wg-anim-ready .pinstripe path{stroke-dasharray:1 1;}
+  html.wg-anim-ready .pinstripe.wg-reveal:not(.wg-in) path{stroke-dashoffset:1;}
+  html.wg-anim-ready .pinstripe.wg-in path{animation:wg-draw .9s var(--wg-ease) forwards;}
+
+  @media (hover:none){
+    .photo-item img{transition:transform .15s var(--wg-ease);}
+    .photo-item:active img{transform:scale(.97);}
+    .btn-primary:active,.tab:active{transform:translateY(1px) scale(.98);}
+  }
+
+  html.wg-anim-ready .lightbox.open img{animation:wg-modal-in .3s var(--wg-ease) both;}
+
+  @media (prefers-reduced-motion:reduce){
+    .wg-boot,.wg-reveal,.pinstripe path,.lightbox img{animation:none !important;transition:none !important;}
+    html.wg-anim-ready .wg-reveal:not(.wg-in){opacity:1 !important;transform:none !important;}
+    html.wg-anim-ready .pinstripe.wg-reveal:not(.wg-in) path{stroke-dashoffset:0 !important;}
+  }
+  /* ═══════════════ end v3.22.0 animation layer ═══════════════ */
 </style>
 </head>
 <body>
+<script>console.log('Pack Gallery BUILD v3.22.0 ' + new Date().toISOString());</script>
 
 <div class="top-bar">
   <div class="container">
-    <div class="brand">
+    <div class="brand wg-boot wg-boot-1">
       <div class="brand-mark">W</div>
       <div>
         <div class="brand-name">WOLF'S GARAGE</div>
@@ -123,9 +161,9 @@
 
 <div class="hero">
   <div class="container">
-    <div class="hero-eyebrow">Hot Rods · Builds · Real Machines</div>
-    <h1>THE <span class="accent">PACK</span><br>GALLERY</h1>
-    <p class="hero-sub">Wolf's shots and the community's iron. Submit yours — no account, no form, just the photo.</p>
+    <div class="hero-eyebrow wg-boot wg-boot-2">Hot Rods · Builds · Real Machines</div>
+    <h1 class="wg-boot wg-boot-3">THE <span class="accent">PACK</span><br>GALLERY</h1>
+    <p class="hero-sub wg-boot wg-boot-4">Wolf's shots and the community's iron. Submit yours — no account, no form, just the photo.</p>
   </div>
 </div>
 
@@ -133,8 +171,8 @@
 
   <div class="pinstripe">
     <svg viewBox="0 0 1200 6" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0,3 Q150,0 300,3 Q450,6 600,3 Q750,0 900,3 Q1050,6 1200,3" stroke="#CC0000" stroke-width="2.5" fill="none" opacity="0.8"/>
-      <path d="M0,3 Q150,6 300,3 Q450,0 600,3 Q750,6 900,3 Q1050,0 1200,3" stroke="#C8922A" stroke-width="1" fill="none" opacity="0.5"/>
+      <path pathLength="1" d="M0,3 Q150,0 300,3 Q450,6 600,3 Q750,0 900,3 Q1050,6 1200,3" stroke="#CC0000" stroke-width="2.5" fill="none" opacity="0.8"/>
+      <path pathLength="1" d="M0,3 Q150,6 300,3 Q450,0 600,3 Q750,6 900,3 Q1050,0 1200,3" stroke="#C8922A" stroke-width="1" fill="none" opacity="0.5"/>
     </svg>
   </div>
 
@@ -192,6 +230,15 @@
   <button class="lightbox-nav lightbox-prev" onclick="navLightbox(-1);event.stopPropagation()">‹</button>
   <img id="lightbox-img" src="" alt="">
   <button class="lightbox-nav lightbox-next" onclick="navLightbox(1);event.stopPropagation()">›</button>
+</div>
+
+<div class="container">
+  <div class="pinstripe">
+    <svg viewBox="0 0 1200 6" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path pathLength="1" d="M0,3 Q150,0 300,3 Q450,6 600,3 Q750,0 900,3 Q1050,6 1200,3" stroke="#CC0000" stroke-width="2.5" fill="none" opacity="0.8"/>
+      <path pathLength="1" d="M0,3 Q150,6 300,3 Q450,0 600,3 Q750,6 900,3 Q1050,0 1200,3" stroke="#C8922A" stroke-width="1" fill="none" opacity="0.5"/>
+    </svg>
+  </div>
 </div>
 
 <div class="footer">
@@ -416,6 +463,53 @@
 
   // ── INIT ──
   renderWolfsPhotos();
+</script>
+
+<script>
+/* v3.22.0 Full Show Build - animation layer (classic script, no module deps).
+   Fail-open: if this script does not run, html.wg-anim-ready is never added
+   and the page renders exactly as before. */
+(function () {
+  'use strict';
+  if (!('IntersectionObserver' in window) || !window.MutationObserver) return;
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  document.documentElement.classList.add('wg-anim-ready');
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      var el = en.target;
+      io.unobserve(el);
+      el.classList.add('wg-in');
+      setTimeout(function () {
+        el.classList.remove('wg-reveal', 'wg-in');
+        el.style.transitionDelay = '';
+      }, 1000);
+    });
+  }, { rootMargin: '0px 0px 0px 0px', threshold: 0.01 });
+
+  function prime(el, i) {
+    if (!el || el.nodeType !== 1) return;
+    if (el.classList.contains('wg-reveal') || el.classList.contains('wg-in')) return;
+    if (el.classList.contains('loading') || el.classList.contains('spinner')) return;
+    el.classList.add('wg-reveal');
+    el.style.transitionDelay = Math.min(i * 70, 350) + 'ms';
+    io.observe(el);
+  }
+
+  var statics = document.querySelectorAll('.pinstripe, .tabs, .section-head, .submit-zone, .footer .container');
+  for (var s = 0; s < statics.length; s++) prime(statics[s], 0);
+
+  ['wolfs-grid', 'pack-grid', 'preview-grid'].forEach(function (id) {
+    var c = document.getElementById(id);
+    if (!c) return;
+    var primeKids = function () {
+      for (var i = 0; i < c.children.length; i++) prime(c.children[i], i);
+    };
+    primeKids();
+    new MutationObserver(primeKids).observe(c, { childList: true });
+  });
+})();
 </script>
 </body>
 </html>
