@@ -136,16 +136,27 @@
 
   html.wg-anim-ready .lightbox.open img{animation:wg-modal-in .3s var(--wg-ease) both;}
 
+  /* ═══════ v3.23.0 SHOW LAYER — skeletons, progress, breathing brand ═══════ */
+  .wg-skel-tile{break-inside:avoid;margin-bottom:10px;height:170px;background:var(--gray-warm);position:relative;overflow:hidden;}
+  .wg-skel-tile:nth-of-type(2n){height:220px;}
+  .wg-skel-tile:nth-of-type(3n){height:140px;}
+  .wg-skel-tile::after{content:'';position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(245,241,232,0.07),transparent);animation:wg-shimmer 1.4s ease-in-out infinite;}
+  @keyframes wg-shimmer{to{transform:translateX(100%);}}
+  #wg-progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:10001;pointer-events:none;}
+  #wg-progress b{display:block;height:100%;background:linear-gradient(90deg,var(--red-dark),var(--red));transform-origin:left center;transform:scaleX(0);box-shadow:0 0 8px rgba(204,0,0,0.6);}
+  html.wg-anim-ready .brand-mark{animation:wg-breathe 4.5s ease-in-out infinite;}
+  @keyframes wg-breathe{0%,100%{box-shadow:0 0 0 rgba(204,0,0,0);}50%{box-shadow:0 0 16px rgba(204,0,0,0.6);}}
+
   @media (prefers-reduced-motion:reduce){
-    .wg-boot,.wg-reveal,.pinstripe path,.lightbox img{animation:none !important;transition:none !important;}
+    .wg-boot,.wg-reveal,.pinstripe path,.lightbox img,.wg-skel-tile::after,.brand-mark{animation:none !important;transition:none !important;}
     html.wg-anim-ready .wg-reveal:not(.wg-in){opacity:1 !important;transform:none !important;}
     html.wg-anim-ready .pinstripe.wg-reveal:not(.wg-in) path{stroke-dashoffset:0 !important;}
   }
-  /* ═══════════════ end v3.22.0 animation layer ═══════════════ */
+  /* ═══════════════ end v3.22.0/v3.23.0 animation layers ═══════════════ */
 </style>
 </head>
 <body>
-<script>console.log('Pack Gallery BUILD v3.22.0 ' + new Date().toISOString());</script>
+<script>console.log('Pack Gallery BUILD v3.23.0 ' + new Date().toISOString());</script>
 
 <div class="top-bar">
   <div class="container">
@@ -189,7 +200,7 @@
       <p>From the garage, the road, and everywhere in between.</p>
     </div>
     <div id="wolfs-grid" class="photo-grid">
-      <div class="loading"><span class="spinner"></span>LOADING...</div>
+      <div class="wg-skel-tile" aria-hidden="true"></div><div class="wg-skel-tile" aria-hidden="true"></div><div class="wg-skel-tile" aria-hidden="true"></div><div class="wg-skel-tile" aria-hidden="true"></div><div class="wg-skel-tile" aria-hidden="true"></div><div class="wg-skel-tile" aria-hidden="true"></div>
     </div>
   </section>
 
@@ -200,7 +211,7 @@
       <p>Community submissions. Real iron from real people.</p>
     </div>
     <div id="pack-grid" class="photo-grid">
-      <div class="loading"><span class="spinner"></span>LOADING...</div>
+      <div class="wg-skel-tile" aria-hidden="true"></div><div class="wg-skel-tile" aria-hidden="true"></div><div class="wg-skel-tile" aria-hidden="true"></div><div class="wg-skel-tile" aria-hidden="true"></div><div class="wg-skel-tile" aria-hidden="true"></div><div class="wg-skel-tile" aria-hidden="true"></div>
     </div>
   </section>
 
@@ -281,7 +292,7 @@
   // ── RENDER WOLF'S PHOTOS ──
   async function renderWolfsPhotos() {
     const grid = document.getElementById('wolfs-grid');
-    grid.innerHTML = '<div class="loading"><span class="spinner"></span>LOADING...</div>';
+    grid.innerHTML = '<div class="wg-skel-tile" aria-hidden="true"></div>'.repeat(6);
     try {
       const q = query(collection(db, 'wolf_photos'), orderBy('addedAt', 'desc'));
       const snap = await getDocs(q);
@@ -304,7 +315,7 @@
   // ── RENDER PACK PHOTOS ──
   async function renderPackPhotos() {
     const grid = document.getElementById('pack-grid');
-    grid.innerHTML = '<div class="loading"><span class="spinner"></span>LOADING...</div>';
+    grid.innerHTML = '<div class="wg-skel-tile" aria-hidden="true"></div>'.repeat(6);
     try {
       const q = query(collection(db, 'pack_photos'), where('status','==','approved'));
       const snap = await getDocs(q);
@@ -492,6 +503,7 @@
     if (!el || el.nodeType !== 1) return;
     if (el.classList.contains('wg-reveal') || el.classList.contains('wg-in')) return;
     if (el.classList.contains('loading') || el.classList.contains('spinner')) return;
+    if (el.classList.contains('wg-skel-tile')) return;
     el.classList.add('wg-reveal');
     el.style.transitionDelay = Math.min(i * 70, 350) + 'ms';
     io.observe(el);
@@ -509,6 +521,23 @@
     primeKids();
     new MutationObserver(primeKids).observe(c, { childList: true });
   });
+
+  /* scroll progress bar */
+  var prog = document.createElement('div');
+  prog.id = 'wg-progress';
+  prog.innerHTML = '<b></b>';
+  document.body.appendChild(prog);
+  var pb = prog.firstChild, ticking = false;
+  var updProg = function () {
+    ticking = false;
+    var h = document.documentElement;
+    var max = h.scrollHeight - window.innerHeight;
+    pb.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, h.scrollTop / max) : 0) + ')';
+  };
+  window.addEventListener('scroll', function () {
+    if (!ticking) { ticking = true; requestAnimationFrame(updProg); }
+  }, { passive: true });
+  updProg();
 })();
 </script>
 </body>
