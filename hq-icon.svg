@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0A0A0A"/>
+  <rect x="40" y="40" width="432" height="432" rx="72" fill="#0A0A0A" stroke="#CC0000" stroke-width="16"/>
+  <rect x="96" y="150" width="320" height="6" fill="#CC0000"/>
+  <rect x="96" y="162" width="320" height="3" fill="#F5F1E8"/>
+  <text x="256" y="330" font-family="Impact, Haettenschweiler, sans-serif" font-size="200" fill="#F5F1E8" text-anchor="middle" letter-spacing="6">WG</text>
+  <rect x="96" y="360" width="320" height="6" fill="#CC0000"/>
+  <rect x="96" y="372" width="320" height="3" fill="#F5F1E8"/>
+</svg>

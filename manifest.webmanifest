@@ -1,0 +1,14 @@
+{
+  "name": "Wolf's Garage HQ",
+  "short_name": "WG HQ",
+  "description": "Wolf's Garage command center — tasks, money, tools, registry.",
+  "start_url": "hq.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "icons": [
+    { "src": "hq-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
