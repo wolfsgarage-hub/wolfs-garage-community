@@ -23,13 +23,19 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .brand-tag{font-family:'Special Elite',monospace;font-size:10px;color:var(--copper);letter-spacing:1px;margin-top:2px;}
 .auth-btn{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;background:transparent;border:1px solid rgba(245,241,232,0.3);color:rgba(245,241,232,0.7);padding:8px 14px;cursor:pointer;}
 .auth-btn:hover{border-color:var(--red);color:var(--bone);}
-.header-actions{display:flex;align-items:center;gap:8px;margin-left:auto;}
+/* margin instead of flex gap: flex `gap` is unsupported before Safari 14.1 / iOS 14.5,
+   where the buttons would sit flush against each other */
+.header-actions{display:flex;align-items:center;margin-left:auto;}
+.header-actions > #auth-area{margin-left:8px;}
 .btn-get-listed{font-family:'Oswald',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;background:var(--red);color:var(--bone);border:1px solid var(--red);padding:8px 14px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .btn-get-listed:hover{background:var(--red-dark);border-color:var(--red-dark);}
 @media (max-width:420px){
-  .brand{flex-wrap:wrap;gap:10px;}
+  /* force the action pair onto its own right-aligned row rather than relying on
+     wrap behaviour, so the layout is identical across engines */
+  .brand{flex-wrap:wrap;}
   .brand-name{font-size:20px;letter-spacing:3px;}
-  .header-actions{gap:6px;}
+  .header-actions{width:100%;justify-content:flex-end;margin-top:10px;}
+  .header-actions > #auth-area{margin-left:6px;}
   .btn-get-listed{font-size:11px;letter-spacing:1px;padding:8px 10px;}
   .auth-btn{font-size:11px;letter-spacing:1px;padding:8px 10px;}
 }
