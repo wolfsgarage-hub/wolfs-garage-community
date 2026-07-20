@@ -23,6 +23,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .brand-tag{font-family:'Special Elite',monospace;font-size:10px;color:var(--copper);letter-spacing:1px;margin-top:2px;}
 .auth-btn{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;background:transparent;border:1px solid rgba(245,241,232,0.3);color:rgba(245,241,232,0.7);padding:8px 14px;cursor:pointer;}
 .auth-btn:hover{border-color:var(--red);color:var(--bone);}
+.header-actions{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.btn-get-listed{font-family:'Oswald',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;background:var(--red);color:var(--bone);border:1px solid var(--red);padding:8px 14px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.btn-get-listed:hover{background:var(--red-dark);border-color:var(--red-dark);}
+@media (max-width:420px){
+  .brand{flex-wrap:wrap;gap:10px;}
+  .brand-name{font-size:20px;letter-spacing:3px;}
+  .header-actions{gap:6px;}
+  .btn-get-listed{font-size:11px;letter-spacing:1px;padding:8px 10px;}
+  .auth-btn{font-size:11px;letter-spacing:1px;padding:8px 10px;}
+}
 .auth-user{font-family:'Special Elite',monospace;font-size:11px;color:var(--copper);letter-spacing:1px;}
 .pinstripe{width:100%;margin:20px 0 28px;text-align:center;line-height:0;}
 .pinstripe img{width:100%;max-height:70px;object-fit:contain;}
@@ -313,8 +323,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
           <div class="brand-tag">HOT RODDER DIRECTORY</div>
         </div>
       </div>
-      <div id="auth-area">
-        <button class="auth-btn" id="auth-toggle-btn" onclick="openAuthModal()">Sign In</button>
+      <div class="header-actions">
+        <button class="btn-get-listed" onclick="handleAddBiz()">Get Listed</button>
+        <div id="auth-area">
+          <button class="auth-btn" id="auth-toggle-btn" onclick="openAuthModal()">Sign In</button>
+        </div>
       </div>
     </div>
   </div>
@@ -596,7 +609,9 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   });
 
   // ── AUTH MODAL ──
-  window.openAuthModal = () => document.getElementById('auth-modal').classList.add('open');
+  // tab defaults to 'signin'; pass 'create' for entry points used by people who
+  // are by definition not registered yet (Get Listed / Add My Business)
+  window.openAuthModal = (tab) => { switchAuthTab(tab === 'create' ? 'create' : 'signin'); document.getElementById('auth-modal').classList.add('open'); };
   window.closeAuthModal = () => { document.getElementById('auth-modal').classList.remove('open'); document.getElementById('auth-error').style.display='none'; };
   window.switchAuthTab = (tab) => {
     document.querySelectorAll('.modal-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='signin')||(i===1&&tab==='create')));
@@ -664,7 +679,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
   // ── HANDLE ADD BIZ BUTTON ──
   window.handleAddBiz = () => {
-    if (!currentUser) { openAuthModal(); return; }
+    if (!currentUser) { openAuthModal('create'); return; }
     // If we were in edit mode, exit it first
     if (editingListingId) cancelEdit();
     const wrap = document.getElementById('form-wrap');
