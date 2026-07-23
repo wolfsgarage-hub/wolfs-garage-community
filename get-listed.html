@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Get Listed — Hot Rodder Directory — Wolf's Garage</title>
-<meta name="version" content="3.22.0">
+<title>Get Listed â€” Hot Rodder Directory â€” Wolf's Garage</title>
+<meta name="version" content="3.22.1">
 <meta name="description" content="List your shop or business in the Hot Rodder Directory. Free, takes a couple minutes, and you show off your ride at the end.">
 <meta name="robots" content="index,follow">
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dancaaglf/image/upload/w_64,h_64,c_fill,g_auto,r_max,f_png/v1782974224/og-wolf-logo.png">
@@ -97,13 +97,13 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
       <h2><i>01</i> The Basics</h2>
       <p class="sub">Thirty seconds. Who are you and what do you do?</p>
       <label>Business name</label>
-      <input id="bizName" type="text" maxlength="80" placeholder="Rusty Knuckle Speed Shop" required>
+      <input id="bizName" type="text" maxlength="80" required>
       <label>What kind of outfit?</label>
-      <input id="bizType" type="text" maxlength="60" placeholder="Machine shop, upholstery, paint, parts...">
+      <input id="bizType" type="text" maxlength="60">
       <label>City &amp; state</label>
-      <input id="location" type="text" maxlength="80" placeholder="Portland, OR">
+      <input id="location" type="text" maxlength="80">
       <label>What you're known for <em>&mdash; a sentence is plenty</em></label>
-      <textarea id="specialties" maxlength="300" placeholder="Flatheads, chop tops, honest four-wheel drum brakes."></textarea>
+      <textarea id="specialties" maxlength="300"></textarea>
       <div class="navrow"><button type="button" class="btn-red" data-next>Keep Rolling &rarr;</button></div>
     </section>
 
@@ -112,19 +112,19 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
       <h2><i>02</i> The Details</h2>
       <p class="sub">All of this is optional. Skip anything &mdash; you can add it later.</p>
       <label>Street address <em>&mdash; puts your pin on the map</em></label>
-      <input id="address" type="text" maxlength="120" placeholder="123 SE Division St">
+      <input id="address" type="text" maxlength="120">
       <div class="row2">
-        <div><label>Phone / contact</label><input id="contact" type="text" maxlength="60" placeholder="(503) 555-0100"></div>
-        <div><label>Website or social</label><input id="website" type="text" maxlength="120" placeholder="rustyknuckle.com or @handle"></div>
+        <div><label>Phone / contact</label><input id="contact" type="text" maxlength="60"></div>
+        <div><label>Website or social</label><input id="website" type="text" maxlength="120"></div>
       </div>
       <label>Owner / who's behind it</label>
-      <input id="ownerName" type="text" maxlength="80" placeholder="Earl">
+      <input id="ownerName" type="text" maxlength="80">
       <label>The story <em>&mdash; how'd this start?</em></label>
-      <textarea id="bio" maxlength="600" placeholder="Started in the driveway in '02..."></textarea>
+      <textarea id="bio" maxlength="600"></textarea>
       <label>Side work you take on</label>
-      <input id="sideWork" type="text" maxlength="200" placeholder="Weekend welding, trailer repair...">
+      <input id="sideWork" type="text" maxlength="200">
       <label>Anything you offer the community <em>&mdash; discounts, shop nights, advice</em></label>
-      <input id="communityOffer" type="text" maxlength="200" placeholder="10% off for Pack members">
+      <input id="communityOffer" type="text" maxlength="200">
       <div class="navrow">
         <button type="button" class="btn-ghost" data-back>&larr; Back</button>
         <button type="button" class="btn-red" data-next>Keep Rolling &rarr;</button>
@@ -155,7 +155,7 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
       <h2><i>04</i> Wanna Show Off Your Ride?</h2>
       <p class="sub">Not business &mdash; pride. What's in YOUR garage?</p>
       <label>The ride(s)</label>
-      <textarea id="rides" maxlength="300" placeholder="'55 Chevy gasser, straight-axle, still ugly, still fast."></textarea>
+      <textarea id="rides" maxlength="300"></textarea>
       <div class="drop" id="vehDrop">
         <p class="big">TAP TO ADD RIDE PICS</p>
         <p>up to 6</p>
@@ -176,7 +176,7 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
       <p class="sub">Last step. This account is how you edit your listing later.</p>
       <div class="claimbox"><p id="claimSummary">Your listing is built and ready to submit.</p></div>
       <label>Email</label>
-      <input id="acctEmail" type="email" maxlength="120" placeholder="you@shop.com" autocomplete="email">
+      <input id="acctEmail" type="email" maxlength="120" autocomplete="email">
       <label>Password <em>&mdash; 6+ characters</em></label>
       <input id="acctPass" type="password" minlength="6" maxlength="100" autocomplete="new-password">
       <div class="disc">
@@ -273,7 +273,7 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
     }
     if (cur <= 5) {
       const n = document.createElement('span');
-      n.className = 'stepno'; n.textContent = 'step ' + cur + ' of 5';
+      n.className = 'stepno'; n.textContent = 'step ' + cur;
       d.appendChild(n);
     }
   }
@@ -298,7 +298,7 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
     const nb = bizFiles.length + vehFiles.length;
     if (nb) bits.push(nb + ' photo' + (nb > 1 ? 's' : ''));
     if ($('rides').value.trim()) bits.push('one good ride');
-    $('claimSummary').innerHTML = '<strong>' + esc(name) + '</strong>' + (bits.length ? ' &mdash; ' + esc(bits.join(' · ')) : '') + '. Built and ready to submit.';
+    $('claimSummary').innerHTML = '<strong>' + esc(name) + '</strong>' + (bits.length ? ' &mdash; ' + esc(bits.join(' Â· ')) : '') + '. Built and ready to submit.';
   }
   const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -347,7 +347,7 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
     signInMode = !signInMode;
     $('haveAcct').textContent = signInMode
       ? 'signing in with an existing account - tap to switch back to creating one'
-      : 'already have a Pack account? sign in & submit →';
+      : 'already have a Pack account? sign in & submit â†’';
     $('acctPass').autocomplete = signInMode ? 'current-password' : 'new-password';
   });
 
@@ -355,7 +355,7 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
     const err = $('claimErr'); err.textContent = ''; err.classList.remove('ok');
     if (!$('bizName').value.trim()) { show(1); return; }
     const email = $('acctEmail').value.trim(), pass = $('acctPass').value;
-    if (!email || !/.+@.+\..+/.test(email)) { err.textContent = 'need a real email - it’s how you edit this later'; return; }
+    if (!email || !/.+@.+\..+/.test(email)) { err.textContent = 'need a real email - itâ€™s how you edit this later'; return; }
     if (pass.length < 6) { err.textContent = 'password needs 6+ characters'; return; }
     if (!$('agree').checked) { err.textContent = 'tick the box so we know you know the deal'; return; }
 
@@ -404,10 +404,10 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
     } catch (e) {
       console.error(e);
       const m = {
-        'auth/invalid-credential': 'that email has an account but the password didn’t match - try again or reset it on the Directory',
-        'auth/wrong-password': 'that email has an account but the password didn’t match',
+        'auth/invalid-credential': 'that email has an account but the password didnâ€™t match - try again or reset it on the Directory',
+        'auth/wrong-password': 'that email has an account but the password didnâ€™t match',
         'auth/weak-password': 'password needs to be stronger - 6+ characters',
-        'auth/invalid-email': 'that email doesn’t look right',
+        'auth/invalid-email': 'that email doesnâ€™t look right',
         'permission-denied': 'submission blocked - tell Wolf: wolfsgaragenw@gmail.com'
       };
       err.textContent = m[e.code] || ('something jammed: ' + (e.code || e.message) + ' - your typed info is still saved on this phone');
@@ -417,7 +417,7 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
   });
 
   loadDraft(); drawDots(); show(cur);
-  console.log("%cWolf's Garage get-listed wizard v3.22.0", "color:#CC0000;font-family:monospace;font-weight:bold");
+  console.log("%cWolf's Garage get-listed wizard v3.22.1", "color:#CC0000;font-family:monospace;font-weight:bold");
 </script>
 </body>
 </html>
