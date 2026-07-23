@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Get Listed — Hot Rodder Directory — Wolf's Garage</title>
+<meta name="version" content="3.22.0">
+<meta name="description" content="List your shop or business in the Hot Rodder Directory. Free, takes a couple minutes, and you show off your ride at the end.">
+<meta name="robots" content="index,follow">
+<link rel="icon" type="image/png" href="https://res.cloudinary.com/dancaaglf/image/upload/w_64,h_64,c_fill,g_auto,r_max,f_png/v1782974224/og-wolf-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Work+Sans:wght@400;500;600&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0A0A;--red:#CC0000;--bone:#F5F1E8;--copper:#C8922A;--panel:#141414;--panel2:#1c1c1c;--border:rgba(245,241,232,.08);--border-strong:rgba(245,241,232,.18)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--bone);font-family:'Work Sans',sans-serif;line-height:1.55;min-height:100vh}
+a{color:var(--copper);text-decoration:none}a:hover{text-decoration:underline}
+.pin{height:3px;background:repeating-linear-gradient(90deg,var(--red) 0 16px,transparent 16px 20px,var(--bone) 20px 23px,transparent 23px 27px);opacity:.85}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;max-width:640px;margin:0 auto}
+.wordmark{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.12em;color:var(--bone)}
+.wordmark span{color:var(--red)}
+header img{width:42px;height:42px;border-radius:50%}
+main{max-width:640px;margin:0 auto;padding:22px 18px 70px}
+.kick{font-family:'Special Elite',monospace;color:var(--copper);font-size:.82rem;letter-spacing:.06em}
+h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.9rem,7vw,2.9rem);letter-spacing:.05em;line-height:1.03;margin:4px 0 8px}
+h1 i{color:var(--red);font-style:normal}
+.lead{color:rgba(245,241,232,.72);margin-bottom:20px;font-size:.97rem}
+/* progress */
+.dots{display:flex;gap:8px;margin:0 0 22px;align-items:center}
+.dot{width:34px;height:5px;background:var(--panel2);border:1px solid var(--border)}
+.dot.on{background:var(--red);border-color:var(--red)}
+.dot.done{background:var(--copper);border-color:var(--copper)}
+.stepno{font-family:'Special Elite',monospace;font-size:.75rem;color:rgba(245,241,232,.5);margin-left:auto}
+/* steps */
+.step{display:none}
+.step.on{display:block;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h2{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.13em;font-size:1.05rem;margin:0 0 4px}
+h2 i{color:var(--red);font-style:normal}
+.sub{color:rgba(245,241,232,.6);font-size:.88rem;margin-bottom:16px}
+label{display:block;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.1em;font-size:.76rem;color:rgba(245,241,232,.75);margin:14px 0 6px}
+label em{font-style:normal;color:var(--copper);text-transform:none;letter-spacing:0;font-family:'Work Sans',sans-serif;font-weight:400}
+input,textarea,select{width:100%;padding:13px 12px;background:rgba(0,0,0,.5);border:1px solid var(--border-strong);color:var(--bone);font-family:'Work Sans',sans-serif;font-size:1rem}
+input:focus,textarea:focus{outline:none;border-color:var(--red)}
+textarea{min-height:84px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.row2{grid-template-columns:1fr}}
+/* buttons */
+.navrow{display:flex;gap:10px;margin-top:24px;align-items:center}
+.btn-red{flex:1;background:var(--red);color:var(--bone);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.12em;padding:15px 20px;border:none;cursor:pointer;font-size:.92rem}
+.btn-red:disabled{opacity:.5;cursor:default}
+.btn-ghost{background:none;color:rgba(245,241,232,.65);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.1em;padding:14px 16px;border:1px solid var(--border-strong);cursor:pointer;font-size:.8rem}
+.skip{display:block;text-align:center;margin-top:14px;font-family:'Special Elite',monospace;font-size:.82rem;color:rgba(245,241,232,.5);background:none;border:none;cursor:pointer;width:100%}
+.skip:hover{color:var(--copper)}
+/* photos */
+.drop{border:2px dashed var(--border-strong);padding:26px 16px;text-align:center;cursor:pointer;background:var(--panel)}
+.drop:hover{border-color:var(--red)}
+.drop p{color:rgba(245,241,232,.6);font-size:.88rem;margin:0}
+.drop .big{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.06em;color:var(--bone);margin-bottom:4px}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.thumbs img{width:74px;height:74px;object-fit:cover;border:1px solid var(--border-strong)}
+.photonote{font-family:'Special Elite',monospace;font-size:.75rem;color:var(--copper);margin-top:10px}
+/* claim step */
+.claimbox{background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--copper);padding:16px;margin-bottom:16px}
+.claimbox p{font-size:.9rem;color:rgba(245,241,232,.8)}
+.disc{display:flex;gap:10px;align-items:flex-start;margin:16px 0;font-size:.85rem;color:rgba(245,241,232,.75)}
+.disc input{width:auto;margin-top:3px}
+.err{color:#ff6b6b;font-size:.85rem;margin-top:10px;min-height:1.2em;font-family:'Special Elite',monospace}
+.ok{color:var(--copper)}
+/* success */
+.successbox{text-align:center;padding:30px 10px}
+.successbox h2{font-size:1.5rem}
+.successbox .big{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.05em;color:var(--bone);line-height:1.05;margin:10px 0}
+.successbox .big i{color:var(--red);font-style:normal}
+.saveline{font-family:'Special Elite',monospace;font-size:.72rem;color:rgba(245,241,232,.4);text-align:center;margin-top:18px;min-height:1em}
+footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elite',monospace;font-size:.78rem;color:rgba(245,241,232,.5);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <a class="wordmark" href="/">WOLF&rsquo;S <span>GARAGE</span></a>
+  <a href="/"><img src="https://res.cloudinary.com/dancaaglf/image/upload/w_96,h_96,c_fill,g_auto,f_png/v1782974224/og-wolf-logo.png" alt="Wolf's Garage wolf logo"></a>
+</header>
+<div class="pin"></div>
+
+<main>
+  <span class="kick">HOT RODDER DIRECTORY_</span>
+  <h1>GET YOUR SHOP <i>ON THE MAP</i></h1>
+  <p class="lead">Free listing, takes a couple minutes. Start with the easy stuff &mdash; the account comes last, once there&rsquo;s something worth saving.</p>
+
+  <div class="dots" id="dots"></div>
+
+  <form id="wiz" autocomplete="on">
+
+    <!-- STEP 1: THE BASICS -->
+    <section class="step" data-step="1">
+      <h2><i>01</i> The Basics</h2>
+      <p class="sub">Thirty seconds. Who are you and what do you do?</p>
+      <label>Business name</label>
+      <input id="bizName" type="text" maxlength="80" placeholder="Rusty Knuckle Speed Shop" required>
+      <label>What kind of outfit?</label>
+      <input id="bizType" type="text" maxlength="60" placeholder="Machine shop, upholstery, paint, parts...">
+      <label>City &amp; state</label>
+      <input id="location" type="text" maxlength="80" placeholder="Portland, OR">
+      <label>What you're known for <em>&mdash; a sentence is plenty</em></label>
+      <textarea id="specialties" maxlength="300" placeholder="Flatheads, chop tops, honest four-wheel drum brakes."></textarea>
+      <div class="navrow"><button type="button" class="btn-red" data-next>Keep Rolling &rarr;</button></div>
+    </section>
+
+    <!-- STEP 2: THE DETAILS (all skippable) -->
+    <section class="step" data-step="2">
+      <h2><i>02</i> The Details</h2>
+      <p class="sub">All of this is optional. Skip anything &mdash; you can add it later.</p>
+      <label>Street address <em>&mdash; puts your pin on the map</em></label>
+      <input id="address" type="text" maxlength="120" placeholder="123 SE Division St">
+      <div class="row2">
+        <div><label>Phone / contact</label><input id="contact" type="text" maxlength="60" placeholder="(503) 555-0100"></div>
+        <div><label>Website or social</label><input id="website" type="text" maxlength="120" placeholder="rustyknuckle.com or @handle"></div>
+      </div>
+      <label>Owner / who's behind it</label>
+      <input id="ownerName" type="text" maxlength="80" placeholder="Earl">
+      <label>The story <em>&mdash; how'd this start?</em></label>
+      <textarea id="bio" maxlength="600" placeholder="Started in the driveway in '02..."></textarea>
+      <label>Side work you take on</label>
+      <input id="sideWork" type="text" maxlength="200" placeholder="Weekend welding, trailer repair...">
+      <label>Anything you offer the community <em>&mdash; discounts, shop nights, advice</em></label>
+      <input id="communityOffer" type="text" maxlength="200" placeholder="10% off for Pack members">
+      <div class="navrow">
+        <button type="button" class="btn-ghost" data-back>&larr; Back</button>
+        <button type="button" class="btn-red" data-next>Keep Rolling &rarr;</button>
+      </div>
+      <button type="button" class="skip" data-next>skip all this for now &rarr;</button>
+    </section>
+
+    <!-- STEP 3: SHOP PHOTOS -->
+    <section class="step" data-step="3">
+      <h2><i>03</i> Shop Photos</h2>
+      <p class="sub">The shop, the sign, the work. People click pictures.</p>
+      <div class="drop" id="bizDrop">
+        <p class="big">TAP TO ADD PHOTOS</p>
+        <p>phone camera or camera roll &middot; up to 6</p>
+      </div>
+      <input id="bizPhotos" type="file" accept="image/*" multiple hidden>
+      <div class="thumbs" id="bizThumbs"></div>
+      <p class="photonote" id="bizNote"></p>
+      <div class="navrow">
+        <button type="button" class="btn-ghost" data-back>&larr; Back</button>
+        <button type="button" class="btn-red" data-next>Keep Rolling &rarr;</button>
+      </div>
+      <button type="button" class="skip" data-next>no photos handy &mdash; skip &rarr;</button>
+    </section>
+
+    <!-- STEP 4: SHOW OFF YOUR RIDE -->
+    <section class="step" data-step="4">
+      <h2><i>04</i> Wanna Show Off Your Ride?</h2>
+      <p class="sub">Not business &mdash; pride. What's in YOUR garage?</p>
+      <label>The ride(s)</label>
+      <textarea id="rides" maxlength="300" placeholder="'55 Chevy gasser, straight-axle, still ugly, still fast."></textarea>
+      <div class="drop" id="vehDrop">
+        <p class="big">TAP TO ADD RIDE PICS</p>
+        <p>up to 6</p>
+      </div>
+      <input id="vehPhotos" type="file" accept="image/*" multiple hidden>
+      <div class="thumbs" id="vehThumbs"></div>
+      <p class="photonote" id="vehNote"></p>
+      <div class="navrow">
+        <button type="button" class="btn-ghost" data-back>&larr; Back</button>
+        <button type="button" class="btn-red" data-next>Almost Done &rarr;</button>
+      </div>
+      <button type="button" class="skip" data-next>skip &rarr;</button>
+    </section>
+
+    <!-- STEP 5: CLAIM IT -->
+    <section class="step" data-step="5">
+      <h2><i>05</i> Claim Your Listing</h2>
+      <p class="sub">Last step. This account is how you edit your listing later.</p>
+      <div class="claimbox"><p id="claimSummary">Your listing is built and ready to submit.</p></div>
+      <label>Email</label>
+      <input id="acctEmail" type="email" maxlength="120" placeholder="you@shop.com" autocomplete="email">
+      <label>Password <em>&mdash; 6+ characters</em></label>
+      <input id="acctPass" type="password" minlength="6" maxlength="100" autocomplete="new-password">
+      <div class="disc">
+        <input id="agree" type="checkbox">
+        <span>I get it: Wolf reviews every listing before it goes public, my listing info is public on purpose once approved, and I can edit or pull it any time. <a href="https://wolfsgarage.com/privacy" target="_blank" rel="noopener">Privacy, in plain English</a>.</span>
+      </div>
+      <p class="err" id="claimErr"></p>
+      <div class="navrow">
+        <button type="button" class="btn-ghost" data-back>&larr; Back</button>
+        <button type="button" class="btn-red" id="submitBtn">Claim It &amp; Submit</button>
+      </div>
+      <button type="button" class="skip" id="haveAcct">already have a Pack account? sign in &amp; submit &rarr;</button>
+    </section>
+
+    <!-- SUCCESS -->
+    <section class="step" data-step="6">
+      <div class="successbox">
+        <span class="kick">SUBMITTED_</span>
+        <p class="big">WOLF'S GOT IT.<br><i>YOU'RE IN THE QUEUE.</i></p>
+        <p class="sub" style="max-width:420px;margin:0 auto 18px">Every listing gets eyeballed by a human before it hits the map &mdash; usually within a day or two. Your account is live; you can sign in on the <a href="/">Directory</a> any time to edit.</p>
+        <a class="btn-red" style="display:inline-block;text-decoration:none" href="/">See The Directory</a>
+      </div>
+    </section>
+
+  </form>
+  <p class="saveline" id="saveline"></p>
+</main>
+
+<div class="pin"></div>
+<footer>Wolf&rsquo;s Garage &middot; Portland, OR &middot; <a href="/">Directory</a> &middot; <a href="https://wolfsgarage.com">Home</a> &middot; <a href="https://wolfsgarage.com/privacy">Privacy</a></footer>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+  import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAGcEHgch3ofFWFDUlYphyaXAxqk06DAQ0",
+    authDomain: "wolfs-garage-directory.firebaseapp.com",
+    projectId: "wolfs-garage-directory",
+    storageBucket: "wolfs-garage-directory.firebasestorage.app",
+    messagingSenderId: "868695357399",
+    appId: "1:868695357399:web:022c9974691fd183d77d92"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  const CLOUDINARY_CLOUD = "dancaaglf";
+  const CLOUDINARY_PRESET = "wolfs-garage";
+  const DRAFT_KEY = 'wgListingDraft';
+  const MAX_PHOTOS = 6;
+
+  // QR channel attribution: ?src=booth|email|sticker sticks to the draft.
+  // First-party only - it names the door, never the person.
+  const src = new URLSearchParams(location.search).get('src');
+
+  const TEXT_FIELDS = ['bizName','bizType','location','specialties','address','contact','website','ownerName','bio','sideWork','communityOffer','rides'];
+  const $ = id => document.getElementById(id);
+
+  // ---- draft persistence (text only - files can't live in localStorage; say so honestly) ----
+  function loadDraft() {
+    try {
+      const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}');
+      TEXT_FIELDS.forEach(f => { if (d[f]) $(f).value = d[f]; });
+      if (d._step) show(Math.min(d._step, 5));
+      if (d._src && !src) savedSrc = d._src;
+      if (Object.keys(d).some(k => !k.startsWith('_') && d[k])) {
+        $('saveline').textContent = 'draft restored - nothing you typed was lost';
+      }
+    } catch (_) {}
+  }
+  let savedSrc = src || null;
+  let saveTimer = null;
+  function saveDraft(step) {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      const d = { _step: step || cur, _src: savedSrc };
+      TEXT_FIELDS.forEach(f => { const v = $(f).value.trim(); if (v) d[f] = v; });
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); $('saveline').textContent = 'draft saved on this phone'; } catch (_) {}
+    }, 400);
+  }
+  TEXT_FIELDS.forEach(f => $(f).addEventListener('input', () => saveDraft()));
+
+  // ---- step engine ----
+  const steps = Array.from(document.querySelectorAll('.step'));
+  let cur = 1;
+  function drawDots() {
+    const d = $('dots'); d.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+      const el = document.createElement('span');
+      el.className = 'dot' + (i === cur ? ' on' : i < cur ? ' done' : '');
+      d.appendChild(el);
+    }
+    if (cur <= 5) {
+      const n = document.createElement('span');
+      n.className = 'stepno'; n.textContent = 'step ' + cur + ' of 5';
+      d.appendChild(n);
+    }
+  }
+  function show(n) {
+    cur = n;
+    steps.forEach(s => s.classList.toggle('on', +s.dataset.step === n));
+    drawDots();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (n === 5) buildSummary();
+    saveDraft(n);
+  }
+  document.querySelectorAll('[data-next]').forEach(b => b.addEventListener('click', () => {
+    if (cur === 1 && !$('bizName').value.trim()) { $('bizName').focus(); $('bizName').style.borderColor = '#CC0000'; return; }
+    show(Math.min(cur + 1, 5));
+  }));
+  document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => show(Math.max(cur - 1, 1))));
+
+  function buildSummary() {
+    const name = $('bizName').value.trim() || 'Your listing';
+    const bits = [];
+    if ($('location').value.trim()) bits.push($('location').value.trim());
+    const nb = bizFiles.length + vehFiles.length;
+    if (nb) bits.push(nb + ' photo' + (nb > 1 ? 's' : ''));
+    if ($('rides').value.trim()) bits.push('one good ride');
+    $('claimSummary').innerHTML = '<strong>' + esc(name) + '</strong>' + (bits.length ? ' &mdash; ' + esc(bits.join(' · ')) : '') + '. Built and ready to submit.';
+  }
+  const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  // ---- photo pickers (kept in memory; uploaded only on final submit) ----
+  let bizFiles = [], vehFiles = [];
+  function wirePhotos(dropId, inputId, thumbsId, noteId, store) {
+    $(dropId).addEventListener('click', () => $(inputId).click());
+    $(inputId).addEventListener('change', () => {
+      const incoming = Array.from($(inputId).files);
+      for (const f of incoming) {
+        if (store.length >= MAX_PHOTOS) break;
+        if (f.type.startsWith('image/')) store.push(f);
+      }
+      $(inputId).value = '';
+      const t = $(thumbsId); t.innerHTML = '';
+      store.forEach(f => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(f); img.alt = '';
+        t.appendChild(img);
+      });
+      $(noteId).textContent = store.length
+        ? store.length + '/' + MAX_PHOTOS + " picked - they upload when you hit submit. If you leave before that, photos need re-picking (typed info is saved)."
+        : '';
+    });
+  }
+  wirePhotos('bizDrop', 'bizPhotos', 'bizThumbs', 'bizNote', bizFiles);
+  wirePhotos('vehDrop', 'vehPhotos', 'vehThumbs', 'vehNote', vehFiles);
+
+  async function uploadAll(files) {
+    const urls = [];
+    for (const f of files) {
+      const fd = new FormData();
+      fd.append('file', f);
+      fd.append('upload_preset', CLOUDINARY_PRESET);
+      const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method: 'POST', body: fd });
+      if (!r.ok) throw new Error('photo upload failed');
+      const j = await r.json();
+      if (j.secure_url) urls.push(j.secure_url);
+    }
+    return urls;
+  }
+
+  // ---- final submit: account LAST, then the same pending doc the big form writes ----
+  let signInMode = false;
+  $('haveAcct').addEventListener('click', () => {
+    signInMode = !signInMode;
+    $('haveAcct').textContent = signInMode
+      ? 'signing in with an existing account - tap to switch back to creating one'
+      : 'already have a Pack account? sign in & submit →';
+    $('acctPass').autocomplete = signInMode ? 'current-password' : 'new-password';
+  });
+
+  $('submitBtn').addEventListener('click', async () => {
+    const err = $('claimErr'); err.textContent = ''; err.classList.remove('ok');
+    if (!$('bizName').value.trim()) { show(1); return; }
+    const email = $('acctEmail').value.trim(), pass = $('acctPass').value;
+    if (!email || !/.+@.+\..+/.test(email)) { err.textContent = 'need a real email - it’s how you edit this later'; return; }
+    if (pass.length < 6) { err.textContent = 'password needs 6+ characters'; return; }
+    if (!$('agree').checked) { err.textContent = 'tick the box so we know you know the deal'; return; }
+
+    const btn = $('submitBtn');
+    btn.disabled = true;
+    try {
+      btn.textContent = signInMode ? 'SIGNING IN...' : 'CLAIMING...';
+      let cred;
+      try {
+        cred = signInMode
+          ? await signInWithEmailAndPassword(auth, email, pass)
+          : await createUserWithEmailAndPassword(auth, email, pass);
+      } catch (e) {
+        if (e.code === 'auth/email-already-in-use') {
+          // They already exist - try signing them in with what they typed.
+          cred = await signInWithEmailAndPassword(auth, email, pass);
+        } else { throw e; }
+      }
+
+      btn.textContent = 'UPLOADING PHOTOS...';
+      const bizUrls = await uploadAll(bizFiles);
+      const vehUrls = await uploadAll(vehFiles);
+
+      btn.textContent = 'SUBMITTING...';
+      const v = id => $(id).value.trim();
+      await addDoc(collection(db, 'listings'), {
+        bizName: v('bizName'), bizType: v('bizType'),
+        location: v('location'), address: v('address'),
+        contact: v('contact'), website: v('website'),
+        specialties: v('specialties'),
+        ownerName: v('ownerName'), bio: v('bio'),
+        sideWork: v('sideWork'), communityOffer: v('communityOffer'),
+        rides: v('rides'),
+        showEverywhere: false,
+        bizPhotos: bizUrls, vehPhotos: vehUrls,
+        lat: null, lng: null,
+        userId: cred.user.uid, userEmail: cred.user.email,
+        leadSource: savedSrc || 'direct',
+        status: 'pending', submittedAt: new Date().toISOString()
+      });
+
+      localStorage.removeItem(DRAFT_KEY);
+      steps.forEach(s => s.classList.remove('on'));
+      document.querySelector('[data-step="6"]').classList.add('on');
+      $('dots').innerHTML = ''; $('saveline').textContent = '';
+    } catch (e) {
+      console.error(e);
+      const m = {
+        'auth/invalid-credential': 'that email has an account but the password didn’t match - try again or reset it on the Directory',
+        'auth/wrong-password': 'that email has an account but the password didn’t match',
+        'auth/weak-password': 'password needs to be stronger - 6+ characters',
+        'auth/invalid-email': 'that email doesn’t look right',
+        'permission-denied': 'submission blocked - tell Wolf: wolfsgaragenw@gmail.com'
+      };
+      err.textContent = m[e.code] || ('something jammed: ' + (e.code || e.message) + ' - your typed info is still saved on this phone');
+      btn.disabled = false;
+      btn.textContent = 'Claim It & Submit';
+    }
+  });
+
+  loadDraft(); drawDots(); show(cur);
+  console.log("%cWolf's Garage get-listed wizard v3.22.0", "color:#CC0000;font-family:monospace;font-weight:bold");
+</script>
+</body>
+</html>
