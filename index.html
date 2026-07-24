@@ -316,7 +316,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.9 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.11 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -685,7 +685,11 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
   // ── HANDLE ADD BIZ BUTTON ──
   window.handleAddBiz = () => {
-    if (!currentUser) { openAuthModal('create'); return; }
+    // New/logged-out visitors get the progressive wizard (account LAST): the
+    // whole point is not to slam a stranger with a signup before they've built
+    // anything. Logged-in members skip it — they're already authed, so the
+    // inline form is less friction than re-authing at the wizard's claim step.
+    if (!currentUser) { window.location.href = 'get-listed.html?src=directory'; return; }
     // If we were in edit mode, exit it first
     if (editingListingId) cancelEdit();
     const wrap = document.getElementById('form-wrap');
