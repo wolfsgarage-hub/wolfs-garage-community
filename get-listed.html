@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Get Listed â€” Hot Rodder Directory â€” Wolf's Garage</title>
-<meta name="version" content="3.22.1">
+<meta name="version" content="3.22.2">
 <meta name="description" content="List your shop or business in the Hot Rodder Directory. Free, takes a couple minutes, and you show off your ride at the end.">
 <meta name="robots" content="index,follow">
 <link rel="icon" type="image/png" href="https://res.cloudinary.com/dancaaglf/image/upload/w_64,h_64,c_fill,g_auto,r_max,f_png/v1782974224/og-wolf-logo.png">
@@ -230,6 +230,13 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
   const DRAFT_KEY = 'wgListingDraft';
   const MAX_PHOTOS = 6;
 
+  // Analytics: name + version only, no PII. Same allowlisted /api/track sink and
+  // same beacon shape the directory's inline form uses, so business_listing_start
+  // / _complete count BOTH doors (new visitors here, members on the inline form).
+  // The two paths are mutually exclusive, so this never double-counts one person.
+  const APP_VER = document.querySelector('meta[name=version]')?.content || '3.22.2';
+  function wgTrack(n){try{if(!n)return;var b=JSON.stringify({e:String(n).slice(0,40),v:APP_VER});if(navigator.sendBeacon){navigator.sendBeacon("https://wolfsgarage.com/api/track",b);}else{var x=new XMLHttpRequest();x.open("POST","https://wolfsgarage.com/api/track",true);x.send(b);}}catch(e){}}
+
   // QR channel attribution: ?src=booth|email|sticker sticks to the draft.
   // First-party only - it names the door, never the person.
   const src = new URLSearchParams(location.search).get('src');
@@ -397,6 +404,7 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
         status: 'pending', submittedAt: new Date().toISOString()
       });
 
+      wgTrack('business_listing_complete');
       localStorage.removeItem(DRAFT_KEY);
       steps.forEach(s => s.classList.remove('on'));
       document.querySelector('[data-step="6"]').classList.add('on');
@@ -417,7 +425,11 @@ footer{max-width:640px;margin:0 auto;padding:16px 18px;font-family:'Special Elit
   });
 
   loadDraft(); drawDots(); show(cur);
-  console.log("%cWolf's Garage get-listed wizard v3.22.1", "color:#CC0000;font-family:monospace;font-weight:bold");
+  // Arriving at the wizard IS the "started a listing" signal (they tapped Get
+  // Listed / scanned the QR). sessionStorage guard so a mid-flow reload in the
+  // same tab does not double-count one person.
+  try { if (!sessionStorage.getItem('wgListStarted')) { sessionStorage.setItem('wgListStarted', '1'); wgTrack('business_listing_start'); } } catch (_) { wgTrack('business_listing_start'); }
+  console.log("%cWolf's Garage get-listed wizard v3.22.2", "color:#CC0000;font-family:monospace;font-weight:bold");
 </script>
 </body>
 </html>
