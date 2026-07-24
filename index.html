@@ -316,7 +316,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.21.11 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.22.3 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -562,6 +562,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </div>
 
 <script type="module">
+// Privacy-conscious analytics (v3.22.3): event NAME only - never search text,
+// business names, emails, or form contents. Sink is the main site's allowlisted
+// /api/track endpoint; sendBeacon body is text/plain so no CORS preflight.
+// directory_search is the only event wired here: business_listing_start/_complete
+// already fire from the get-listed wizard (get-listed.html), so they are NOT
+// duplicated here.
+window.wgTrack=function(n){try{if(!n)return;(window.wgq=window.wgq||[]).push(n);var b=JSON.stringify({e:String(n).slice(0,40),v:"3.22.3"});if(navigator.sendBeacon){navigator.sendBeacon("https://wolfsgarage.com/api/track",b);}else{var x=new XMLHttpRequest();x.open("POST","https://wolfsgarage.com/api/track",true);x.send(b);}}catch(e){}};
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
   import { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
@@ -1860,6 +1867,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
   window.applyFilters = function() {
     const service = document.getElementById('service-filter').value;
+    // Count a search at most once per 10s, and only when the user typed something.
+    try { if (service && service.trim() && (!window.__wgLastSearch || Date.now() - window.__wgLastSearch > 10000)) { window.__wgLastSearch = Date.now(); wgTrack('directory_search'); } } catch(_) {}
     const radius = parseFloat(document.getElementById('radius-filter').value) || 0;
     let filtered = allListingsData;
     if (service) {
