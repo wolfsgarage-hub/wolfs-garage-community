@@ -125,7 +125,7 @@
   <div class="container">
     <div class="hero-eyebrow">Hot Rods · Builds · Real Machines</div>
     <h1>THE <span class="accent">PACK</span><br>GALLERY</h1>
-    <p class="hero-sub">Wolf's shots and the community's iron. Submit yours — no account, no form, just the photo.</p>
+    <p class="hero-sub">The community's iron. Submit yours — no account, no form, just the photo.</p>
   </div>
 </div>
 
@@ -139,24 +139,12 @@
   </div>
 
   <div class="tabs">
-    <button class="tab active" data-tab="wolfs-photos" onclick="switchTab('wolfs-photos')">Wolf's Photos</button>
-    <button class="tab" data-tab="pack-photos" onclick="switchTab('pack-photos')">Pack Photos</button>
+    <button class="tab active" data-tab="pack-photos" onclick="switchTab('pack-photos')">Pack Photos</button>
     <button class="tab" data-tab="submit" onclick="switchTab('submit')">Submit a Photo</button>
   </div>
 
-  <!-- WOLF'S PHOTOS -->
-  <section class="section active" id="wolfs-photos">
-    <div class="section-head">
-      <h2>WOLF'S SHOTS</h2>
-      <p>From the garage, the road, and everywhere in between.</p>
-    </div>
-    <div id="wolfs-grid" class="photo-grid">
-      <div class="loading"><span class="spinner"></span>LOADING...</div>
-    </div>
-  </section>
-
   <!-- PACK PHOTOS -->
-  <section class="section" id="pack-photos">
+  <section class="section active" id="pack-photos">
     <div class="section-head">
       <h2>THE PACK</h2>
       <p>Community submissions. Real iron from real people.</p>
@@ -226,33 +214,9 @@
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelector(`.tab[data-tab="${name}"]`).classList.add('active');
     document.getElementById(name).classList.add('active');
-    if (name === 'wolfs-photos') renderWolfsPhotos();
     if (name === 'pack-photos') renderPackPhotos();
     window.scrollTo({top:0,behavior:'smooth'});
   };
-
-  // ── RENDER WOLF'S PHOTOS ──
-  async function renderWolfsPhotos() {
-    const grid = document.getElementById('wolfs-grid');
-    grid.innerHTML = '<div class="loading"><span class="spinner"></span>LOADING...</div>';
-    try {
-      const q = query(collection(db, 'wolf_photos'), orderBy('addedAt', 'desc'));
-      const snap = await getDocs(q);
-      const photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      lightboxPhotos = photos.map(p => p.imageData || p.imageUrl);
-      if (photos.length === 0) {
-        grid.innerHTML = '<div class="empty"><div class="empty-icon">🔧</div><div class="empty-text">NOTHING YET.<br>CHECK BACK SOON.</div></div>';
-        return;
-      }
-      grid.innerHTML = photos.map((p,i) => `
-        <div class="photo-item" onclick="openLightbox(${i},'wolf')">
-          <img src="${p.imageData || p.imageUrl}" loading="lazy" alt="Wolf's photo">
-        </div>
-      `).join('');
-    } catch(e) {
-      grid.innerHTML = '<div class="empty"><div class="empty-icon">⚠</div><div class="empty-text">COULDN\'T LOAD.<br>CHECK CONNECTION.</div></div>';
-    }
-  }
 
   // ── RENDER PACK PHOTOS ──
   async function renderPackPhotos() {
@@ -415,7 +379,7 @@
   }
 
   // ── INIT ──
-  renderWolfsPhotos();
+  renderPackPhotos();
 </script>
 </body>
 </html>
