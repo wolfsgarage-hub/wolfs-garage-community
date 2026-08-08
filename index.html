@@ -78,6 +78,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .filter-radius{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:10px 14px;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:1px;cursor:pointer;flex:1;min-width:140px;}
 .filter-radius:focus{outline:none;border-color:var(--red);}
 .locate-btn{background:var(--black);border:1px solid var(--line);color:var(--bone);padding:8px 12px;font-size:16px;cursor:pointer;line-height:1;}
+.locate-hint{flex-basis:100%;margin:6px 0 0;font-family:'Special Elite',monospace;font-size:11px;color:rgba(245,241,232,0.45);letter-spacing:.3px;}
 .locate-btn:hover{border-color:var(--red);}
 .locate-btn:active{background:var(--red);}
 .map-wrap{margin-bottom:32px;position:relative;overflow:hidden;height:300px;border:1px solid var(--line);}
@@ -129,6 +130,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .modal-close{position:absolute;top:12px;right:16px;background:transparent;border:none;color:rgba(245,241,232,0.4);font-size:20px;cursor:pointer;}
 /* FORM */
 .form-wrap{display:none;border-top:3px solid var(--red);padding:48px 0 80px;}
+.submit-success{display:none;border-top:3px solid var(--red);background:var(--ink);padding:44px 0 60px;}
+.submit-success .ss-inner{max-width:560px;margin:0 auto;padding:0 20px;text-align:center;}
+.submit-success .ss-check{width:56px;height:56px;line-height:56px;margin:0 auto 16px;border-radius:50%;background:var(--red);color:var(--bone);font-size:30px;}
+.submit-success h3{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;color:var(--bone);margin:0 0 12px;}
+.submit-success p{color:rgba(245,241,232,0.8);line-height:1.6;margin:0 0 12px;font-size:15px;}
+.submit-success .ss-dismiss{margin-top:14px;background:var(--red);color:var(--bone);border:none;padding:14px 40px;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:2px;font-size:14px;cursor:pointer;}
+.submit-success .ss-dismiss:hover{background:var(--red-dark);}
 .form-wrap.open{display:block;}
 .form-head{margin-bottom:32px;}
 .form-head h2{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;margin-bottom:8px;}
@@ -316,7 +324,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </style>
 </head>
 <body>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.22.3 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.22.4 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -369,6 +377,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <input class="filter-input" type="text" id="zip-filter" inputmode="text" maxlength="5" value="97217" onchange="setZipFromInput(this.value)" title="Enter a 5-digit ZIP, or type ALL to show every listing">
         <button type="button" class="locate-btn" id="locate-btn" onclick="detectUserZip()" title="Use my location">📍</button>
       </div>
+      <p class="locate-hint">Tap the pin to sort by where you are. We only check your location when you ask, never on our own.</p>
       <select class="filter-radius" id="radius-filter" onchange="applyFilters()">
         <option value="25">within 25 mi</option>
         <option value="10">within 10 mi</option>
@@ -394,7 +403,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <button class="btn-add" onclick="handleAddBiz()">Add My Business</button>
   </div>
 
-  <div class="form-wrap" id="form-wrap">
+  <div class="submit-success" id="submit-success">
+  <div class="ss-inner">
+    <div class="ss-check">&#10003;</div>
+    <h3>You're in.</h3>
+    <p>Your listing was sent to Wolf for a quick review. Once it's approved it shows up in the directory, usually within about 24 hours.</p>
+    <p>Nothing else to do on your end. If we have a question, we'll email you.</p>
+    <button type="button" class="ss-dismiss" onclick="dismissSubmitSuccess()">DONE</button>
+  </div>
+</div>
+<div class="form-wrap" id="form-wrap">
     <div class="edit-banner" id="edit-banner" style="display:none;">
       <span id="edit-banner-text">EDITING YOUR LISTING</span>
       <button type="button" class="cancel-edit" onclick="cancelEdit()">CANCEL</button>
@@ -562,7 +580,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 </div>
 
 <script type="module">
-// Privacy-conscious analytics (v3.22.3): event NAME only - never search text,
+// Privacy-conscious analytics (v3.22.4): event NAME only - never search text,
 // business names, emails, or form contents. Sink is the main site's allowlisted
 // /api/track endpoint; sendBeacon body is text/plain so no CORS preflight.
 // directory_search is the only event wired here: business_listing_start/_complete
@@ -1016,8 +1034,7 @@ window.wgTrack=function(n){try{if(!n)return;(window.wgq=window.wgq||[]).push(n);
         document.getElementById('biz-thumbs').innerHTML = '';
         document.getElementById('veh-thumbs').innerHTML = '';
         document.getElementById('form-wrap').classList.remove('open');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        showToast('SUBMITTED \u2014 WOLF WILL REVIEW SHORTLY');
+        showSubmitSuccess();
       }
     } catch(err) {
       console.error(err);
@@ -1588,6 +1605,16 @@ window.wgTrack=function(n){try{if(!n)return;(window.wgq=window.wgq||[]).push(n);
   }
   window.updateViewMode = updateViewMode;
 
+  window.dismissSubmitSuccess = function() {
+    var el = document.getElementById('submit-success');
+    if (el) el.style.display = 'none';
+  };
+  function showSubmitSuccess() {
+    var el = document.getElementById('submit-success');
+    if (!el) return;
+    el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('show');
@@ -1963,18 +1990,18 @@ window.wgTrack=function(n){try{if(!n)return;(window.wgq=window.wgq||[]).push(n);
     });
   }
 
-  // Auto-attempt geolocation on first load. If the browser prompt doesn't appear or the user
-  // denies/dismisses, the default ZIP stays as the active filter. User can manually tap the
-  // 📍 button next to the ZIP input to re-attempt after granting permission.
-  function waitForGeocoderThenDetect() {
+  // Load to the Portland default with NO geolocation prompt. Location is opt-in
+  // only - the user taps the locate button when they want it. Prompting on load
+  // with no context spooked visitors and explained nothing. Denial/absence just
+  // leaves this Portland default in place.
+  function applyDefaultZipWhenReady() {
     if (geocoder) {
-      console.log('[ZIP] Geocoder ready, attempting auto-detect');
-      detectUserZip();
+      geocodeZipAndApply(DEFAULT_ZIP);
     } else {
-      setTimeout(waitForGeocoderThenDetect, 200);
+      setTimeout(applyDefaultZipWhenReady, 200);
     }
   }
-  waitForGeocoderThenDetect();
+  applyDefaultZipWhenReady();
 
   renderApproved();
   loadFeatured();
