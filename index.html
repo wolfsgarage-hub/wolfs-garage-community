@@ -371,7 +371,7 @@ window.wgImg = function (u, box) {
   } catch (e) { return u; }
 };
 </script>
-<script>console.log('Wolf\u2019s Garage Directory BUILD v3.22.5 ' + new Date().toISOString());</script>
+<script>console.log('Wolf\u2019s Garage Directory BUILD v3.22.6 ' + new Date().toISOString());</script>
 
 <!-- HEADER -->
 <div class="top-bar">
@@ -934,7 +934,7 @@ window.wgTrack=function(n){try{if(!n)return;(window.wgq=window.wgq||[]).push(n);
     const mainVeh = l.mainVehicleIdx || 0;
     const cleanAddr = stripUrlsFromAddress(l.address);
     const websiteUrl = (l.website || '').trim();
-    const websiteHref = websiteUrl && !/^https?:\/\//i.test(websiteUrl) ? 'https://' + websiteUrl : websiteUrl;
+    const websiteHref = listingWebsiteHref(websiteUrl);
     const section = (label, body) => body ? `<div class="detail-section"><div class="detail-section-label">${label}</div><div class="detail-section-body">${body}</div></div>` : '';
     const photoStrip = (urls, mainIdx) => urls.length ? `<div class="detail-photos">${urls.map((u,i) => `<img src="${esc(wgImg(u, 400))}" class="${i===mainIdx?'is-main':''}" loading="lazy" decoding="async" onclick="window.open('${esc(u)}','_blank')">`).join('')}</div>` : '';
     const leftCol = `
@@ -943,7 +943,7 @@ window.wgTrack=function(n){try{if(!n)return;(window.wgq=window.wgq||[]).push(n);
       <div class="detail-type">${esc(l.bizType || '')}</div>
       <div class="detail-loc">${esc(fmtLoc(l.location || ''))}${cleanAddr ? ' \u00B7 ' + esc(cleanAddr) : ''}</div>
       <div class="detail-section"><div class="detail-section-label">BUSINESS INFO</div></div>
-      ${section('WEBSITE', websiteHref ? '<a href="' + esc(websiteHref) + '" target="_blank" rel="noopener">' + esc(websiteUrl) + '</a>' : '')}
+      ${section('WEBSITE', websiteHref ? '<a href="' + esc(websiteHref) + '" target="_blank" rel="noopener">' + esc(websiteUrl) + '</a>' : esc(websiteUrl))}
       ${section('CONTACT', l.contact ? '<a href="mailto:' + esc(l.contact) + '">' + esc(l.contact) + '</a>' : '')}
     `;
     const rightCol = `
@@ -1118,13 +1118,14 @@ window.wgTrack=function(n){try{if(!n)return;(window.wgq=window.wgq||[]).push(n);
       const mainBizPhoto = bizPhotos[mainBizIdx];
       const mainVehPhoto = vehPhotos[mainVehIdx];
       const needsPin = !l.lat || !l.lng;
+      const websiteHref = listingWebsiteHref(l.website);
       return `
         <div class="listing-card" onclick="openListingDetail('${l.id}')" style="cursor:pointer;">
           ${canEdit ? `<div style="position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:2;">${needsPin ? `<button class="profile-fix-loc-btn" style="padding:6px 12px;font-size:11px;" onclick="event.stopPropagation();fixListingLocation('${l.id}')">\u2316 FIX PIN</button>` : ''}<button class="edit-listing-btn" style="position:static;" onclick="event.stopPropagation();enterEditMode('${l.id}')">\u270E EDIT</button></div>` : ''}
           ${(mainBizPhoto || mainVehPhoto) ? `<div class="listing-photos">${mainBizPhoto ? `<div style="position:relative;display:inline-block;"><img src="${wgImg(mainBizPhoto, 400)}" class="main-photo" title="Business preview" loading="lazy" decoding="async"></div>` : ''}${mainVehPhoto ? `<div style="position:relative;display:inline-block;"><img src="${wgImg(mainVehPhoto, 400)}" class="main-photo" title="Ride preview" loading="lazy" decoding="async"></div>` : ''}</div>` : ''}
           <div class="biz-name">${esc(l.bizName)}</div>
           <div class="biz-type">${esc(l.bizType)}</div>
-          <div class="biz-loc">${esc(fmtLoc(l.location))}${l.website ? ' · <a href="'+esc(l.website)+'" target="_blank" style="color:var(--copper);text-decoration:underline;" onclick="event.stopPropagation()">site</a>' : ''}</div>
+          <div class="biz-loc">${esc(fmtLoc(l.location))}${websiteHref ? ' · <a href="'+esc(websiteHref)+'" target="_blank" rel="noopener noreferrer" style="color:var(--copper);text-decoration:underline;" onclick="event.stopPropagation()">site</a>' : (l.website ? ' · ' + esc(l.website) : '')}</div>
           ${needsPin ? '<div class="loc-pending">\u26A0 LOCATION PENDING</div>' : ''}
           <div class="biz-bio">${esc(l.bio)}</div>
           ${l.rides ? `<div class="biz-rides">RIDES: ${esc(l.rides)}</div>` : ''}
@@ -1668,6 +1669,21 @@ window.wgTrack=function(n){try{if(!n)return;(window.wgq=window.wgq||[]).push(n);
     setTimeout(() => t.classList.remove('show'), 3000);
   }
 
+  // Display-only URL normalization. Never rewrite stored listings or guess a
+  // social network for a bare @handle or free-text description.
+  function listingWebsiteHref(value) {
+    const raw = String(value || '').trim();
+    if (!raw || /[\s<>]/.test(raw)) return '';
+    const candidate = raw.startsWith('//') ? 'https:' + raw
+      : /^https?:\/\//i.test(raw) ? raw : 'https://' + raw;
+    try {
+      const url = new URL(candidate);
+      if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return '';
+      if (!/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}$/i.test(url.hostname)) return '';
+      return url.href;
+    } catch (_) { return ''; }
+  }
+
   function esc(s) {
     if (!s) return '';
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1723,12 +1739,13 @@ window.wgTrack=function(n){try{if(!n)return;(window.wgq=window.wgq||[]).push(n);
       }
       const l = listingSnap.data();
       const mainPhoto = l.bizPhotos?.[l.mainPhotoIdx || 0] || null;
+      const websiteHref = listingWebsiteHref(l.website);
       panel.innerHTML = `
         ${mainPhoto ? `<img src="${wgImg(mainPhoto, 1600)}" class="feat-photo" alt="">` : ''}
         <div class="feat-biz-name">${esc(l.bizName)}</div>
         <div class="feat-biz-type">${esc(l.bizType)} · ${esc(l.location)}</div>
         <div class="feat-bio">${esc(l.bio)}</div>
-        ${l.website ? `<div class="feat-loc"><a href="${esc(l.website)}" target="_blank" style="color:var(--copper);">↗ ${esc(l.website)}</a></div>` : `<div class="feat-loc">${esc(l.contact || '')}</div>`}
+        ${websiteHref ? `<div class="feat-loc"><a href="${esc(websiteHref)}" target="_blank" rel="noopener noreferrer" style="color:var(--copper);">↗ ${esc(l.website)}</a></div>` : `<div class="feat-loc">${esc(l.website || l.contact || '')}</div>`}
       `;
     } catch(e) {
       // Fail gracefully: show empty state instead of "COULDN'T LOAD".
